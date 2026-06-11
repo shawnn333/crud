@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/shawnn333/crud.git/static/css/main.dfb03293.css",
-    "main.js": "/shawnn333/crud.git/static/js/main.85f7329d.js",
+    "main.css": "/shawnn333/crud.git/static/css/main.3b71cc2a.css",
+    "main.js": "/shawnn333/crud.git/static/js/main.0c76ab54.js",
     "static/js/453.5526d649.chunk.js": "/shawnn333/crud.git/static/js/453.5526d649.chunk.js",
     "index.html": "/shawnn333/crud.git/index.html",
-    "main.dfb03293.css.map": "/shawnn333/crud.git/static/css/main.dfb03293.css.map",
-    "main.85f7329d.js.map": "/shawnn333/crud.git/static/js/main.85f7329d.js.map",
+    "main.3b71cc2a.css.map": "/shawnn333/crud.git/static/css/main.3b71cc2a.css.map",
+    "main.0c76ab54.js.map": "/shawnn333/crud.git/static/js/main.0c76ab54.js.map",
     "453.5526d649.chunk.js.map": "/shawnn333/crud.git/static/js/453.5526d649.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.dfb03293.css",
-    "static/js/main.85f7329d.js"
+    "static/css/main.3b71cc2a.css",
+    "static/js/main.0c76ab54.js"
   ]
 }

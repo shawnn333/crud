@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/shawnn333/crud.git/static/css/main.3b71cc2a.css",
-    "main.js": "/shawnn333/crud.git/static/js/main.0c76ab54.js",
-    "static/js/453.5526d649.chunk.js": "/shawnn333/crud.git/static/js/453.5526d649.chunk.js",
-    "index.html": "/shawnn333/crud.git/index.html",
-    "main.3b71cc2a.css.map": "/shawnn333/crud.git/static/css/main.3b71cc2a.css.map",
-    "main.0c76ab54.js.map": "/shawnn333/crud.git/static/js/main.0c76ab54.js.map",
-    "453.5526d649.chunk.js.map": "/shawnn333/crud.git/static/js/453.5526d649.chunk.js.map"
+    "main.css": "/crud/static/css/main.3b71cc2a.css",
+    "main.js": "/crud/static/js/main.0099c1ab.js",
+    "static/js/453.5526d649.chunk.js": "/crud/static/js/453.5526d649.chunk.js",
+    "index.html": "/crud/index.html",
+    "main.3b71cc2a.css.map": "/crud/static/css/main.3b71cc2a.css.map",
+    "main.0099c1ab.js.map": "/crud/static/js/main.0099c1ab.js.map",
+    "453.5526d649.chunk.js.map": "/crud/static/js/453.5526d649.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.3b71cc2a.css",
-    "static/js/main.0c76ab54.js"
+    "static/js/main.0099c1ab.js"
   ]
 }

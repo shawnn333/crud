@@ -1,30 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import {
-  FiSearch,
-  FiEdit2,
-  FiTrash2,
-  FiCheckCircle,
-} from "react-icons/fi";
-import "./App.css";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
-  const [title, setTitle] = useState("");
+  const [task, setTask] = useState("");
   const [search, setSearch] = useState("");
   const [editId, setEditId] = useState(null);
+
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem("tasks");
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!title.trim()) return;
+    if (!task.trim()) return;
 
     if (editId) {
       setTasks(
-        tasks.map((task) =>
-          task.id === editId
-            ? { ...task, title }
-            : task
+        tasks.map((item) =>
+          item.id === editId
+            ? { ...item, title: task }
+            : item
         )
       );
       setEditId(null);
@@ -33,211 +34,102 @@ function App() {
         ...tasks,
         {
           id: Date.now(),
-          title,
-          completed: false,
+          title: task,
         },
       ]);
     }
 
-    setTitle("");
+    setTask("");
+  };
+
+  const handleEdit = (item) => {
+    setTask(item.title);
+    setEditId(item.id);
   };
 
   const handleDelete = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+    setTasks(tasks.filter((item) => item.id !== id));
   };
 
-  const handleEdit = (task) => {
-    setTitle(task.title);
-    setEditId(task.id);
-  };
-
-  const toggleComplete = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              completed: !task.completed,
-            }
-          : task
-      )
-    );
-  };
-
-  const filteredTasks = tasks.filter((task) =>
-    task.title
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const filteredTasks = tasks.filter((item) =>
+    item.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  const completedTasks = tasks.filter(
-    (task) => task.completed
-  ).length;
-
   return (
-    <div className="app-bg">
-      <div className="container py-5">
+    <div className="container mt-5" style={{ maxWidth: "700px" }}>
+      <div className="card shadow">
+        <div className="card-body">
+          <h2 className="text-center mb-4">To-Do List CRUD</h2>
 
-        <div className="header-section">
-          <h1 className="fw-bold">Task Manager</h1>
-          <p className="text-muted">
-            Manage your daily tasks efficiently.
-          </p>
-        </div>
-
-        <div className="row mb-4">
-
-          <div className="col-md-4 mb-3">
-            <div className="stats-card">
-              <h2>{tasks.length}</h2>
-              <p>Total Tasks</p>
-            </div>
-          </div>
-
-          <div className="col-md-4 mb-3">
-            <div className="stats-card">
-              <h2>{completedTasks}</h2>
-              <p>Completed</p>
-            </div>
-          </div>
-
-          <div className="col-md-4 mb-3">
-            <div className="stats-card">
-              <h2>{tasks.length - completedTasks}</h2>
-              <p>Pending</p>
-            </div>
-          </div>
-
-        </div>
-
-        <div className="card custom-card mb-4">
-          <div className="card-body">
-
-            <form onSubmit={handleSubmit}>
-              <div className="row g-2">
-
-                <div className="col-md-9">
-                  <input
-                    type="text"
-                    className="form-control form-control-lg"
-                    placeholder="Enter your task..."
-                    value={title}
-                    onChange={(e) =>
-                      setTitle(e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="col-md-3">
-                  <button
-                    className="btn btn-dark btn-lg w-100"
-                  >
-                    {editId
-                      ? "Update Task"
-                      : "Add Task"}
-                  </button>
-                </div>
-
-              </div>
-            </form>
-
-          </div>
-        </div>
-
-        <div className="card custom-card mb-4">
-          <div className="card-body">
-
-            <div className="input-group">
-
+          {/* Add Task */}
+          <form onSubmit={handleSubmit}>
+            <div className="input-group mb-3">
               <input
                 type="text"
                 className="form-control"
-                placeholder="Search tasks..."
-                value={search}
-                onChange={(e) =>
-                  setSearch(e.target.value)
-                }
+                placeholder="Enter task..."
+                value={task}
+                onChange={(e) => setTask(e.target.value)}
               />
 
-              <button className="btn btn-dark">
-                <FiSearch />
+              <button type="submit" className="btn btn-dark">
+                {editId ? "Update" : "Add"}
               </button>
-
             </div>
+          </form>
 
-          </div>
+          {/* Search */}
+          <input
+            type="text"
+            className="form-control mb-4"
+            placeholder="Search task..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          {/* Task Table */}
+          <table className="table table-bordered">
+            <thead className="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Task</th>
+                <th width="180">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredTasks.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="text-center">
+                    No tasks found
+                  </td>
+                </tr>
+              ) : (
+                filteredTasks.map((item, index) => (
+                  <tr key={item.id}>
+                    <td>{index + 1}</td>
+                    <td>{item.title}</td>
+                    <td>
+                      <button
+                        className="btn btn-primary btn-sm me-2"
+                        onClick={() => handleEdit(item)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-
-        <div className="card custom-card">
-          <div className="card-body">
-
-            {filteredTasks.length === 0 ? (
-              <div className="text-center py-4 text-muted">
-                No tasks available
-              </div>
-            ) : (
-              filteredTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="task-item"
-                >
-                  <div>
-
-                    <h6
-                      className="mb-0"
-                      style={{
-                        textDecoration:
-                          task.completed
-                            ? "line-through"
-                            : "none",
-                        color:
-                          task.completed
-                            ? "#888"
-                            : "#222",
-                      }}
-                    >
-                      {task.title}
-                    </h6>
-
-                  </div>
-
-                  <div>
-
-                    <button
-                      className="btn btn-outline-success btn-sm me-2"
-                      onClick={() =>
-                        toggleComplete(task.id)
-                      }
-                    >
-                      <FiCheckCircle />
-                    </button>
-
-                    <button
-                      className="btn btn-outline-primary btn-sm me-2"
-                      onClick={() =>
-                        handleEdit(task)
-                      }
-                    >
-                      <FiEdit2 />
-                    </button>
-
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() =>
-                        handleDelete(task.id)
-                      }
-                    >
-                      <FiTrash2 />
-                    </button>
-
-                  </div>
-                </div>
-              ))
-            )}
-
-          </div>
-        </div>
-
       </div>
     </div>
   );

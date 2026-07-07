@@ -6,17 +6,37 @@ export const fetchTasksAsync = createAsyncThunk(
   'tasks/fetchTasks',
   async (_, { rejectWithValue }) => {
     try {
+      // Primary source: app's persisted Redux state
       const stored = localStorage.getItem('tasksState');
-      if (!stored) return [];
-
-      const parsed = JSON.parse(stored);
-      const tasksData = parsed?.tasks;
-
-      if (Array.isArray(tasksData)) {
-        return tasksData;
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          const tasksData = parsed?.tasks;
+          if (Array.isArray(tasksData)) return tasksData;
+          if (tasksData && Array.isArray(tasksData.tasks)) return tasksData.tasks;
+        } catch (e) {
+          // continue to fallback
+        }
       }
-      if (tasksData && Array.isArray(tasksData.tasks)) {
-        return tasksData.tasks;
+
+      // Fallback: repository localStorage key used by LocalStorageTaskRepository
+      const repoStored = localStorage.getItem('tasks_data');
+      if (repoStored) {
+        try {
+          const parsedRepo = JSON.parse(repoStored);
+          // repo format: { tasks: [...], nextId: N }
+          if (parsedRepo && Array.isArray(parsedRepo.tasks)) {
+            // Tasks may be stored as full objects; return them directly
+            return parsedRepo.tasks.map(t => ({
+              id: t.id,
+              title: t.title,
+              completed: !!t.completed,
+              createdAt: t.createdAt || t.createdAt
+            }));
+          }
+        } catch (e) {
+          // ignore and return empty
+        }
       }
 
       return [];

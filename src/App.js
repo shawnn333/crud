@@ -1,23 +1,38 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  addTask, 
-  deleteTask, 
-  toggleComplete, 
-  editTask, 
-  setFilter, 
-  setActiveNav 
-} from './features/task/taskSlice';
+import {
+  fetchTasksAsync,
+  addTaskAsync,
+  deleteTaskAsync,
+  toggleTaskAsync,
+  editTaskAsync,
+  setFilter,
+  setActiveNav,
+} from './app/redux/task/task.slice';
 import './App.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const App = () => {
   const dispatch = useDispatch();
   
-  // Redux state
-  const tasks = useSelector((state) => state.tasks.tasks);
-  const filter = useSelector((state) => state.tasks.filter);
-  const activeNav = useSelector((state) => state.tasks.activeNav);
+  // ✅ Safely access state - ensure tasks is always an array
+  const tasks = useSelector((state) => {
+    const tasksData = state?.tasks?.tasks;
+    return Array.isArray(tasksData) ? tasksData : [];
+  });
+  
+  const filter = useSelector((state) => {
+    const value = state?.tasks?.filter;
+    return typeof value === 'string' ? value : '';
+  });
+  const activeNav = useSelector((state) => {
+    const value = state?.tasks?.activeNav;
+    return typeof value === 'string' ? value : 'all';
+  });
+  const loading = useSelector((state) => {
+    const value = state?.tasks?.loading;
+    return typeof value === 'boolean' ? value : false;
+  });
   
   // Local state
   const [inputValue, setInputValue] = useState('');
@@ -25,18 +40,22 @@ const App = () => {
   const [editText, setEditText] = useState('');
   const inputRef = useRef(null);
 
-  // Helper to get today at midnight
+  // Load tasks on mount
+  useEffect(() => {
+    dispatch(fetchTasksAsync());
+  }, [dispatch]);
+
+  // Helper functions
   const getToday = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return today;
   };
 
-  // Helper to get date from task (with fallback)
   const getTaskDate = (task) => {
-    if (!task.createdAt) {
+    if (!task?.createdAt) {
       const defaultDate = new Date();
-      defaultDate.setDate(defaultDate.getDate() + (task.id % 5));
+      defaultDate.setDate(defaultDate.getDate() + (task?.id % 5 || 0));
       return defaultDate;
     }
     const date = new Date(task.createdAt);
@@ -44,15 +63,13 @@ const App = () => {
     return date;
   };
 
-  // ========== FILTER FUNCTIONS ==========
   const getFilteredTasks = () => {
-    // ✅ Always create a copy of the array
+    // ✅ tasks is already guaranteed to be an array
     let filtered = [...tasks];
 
-    // Search filter
     if (filter.trim()) {
       filtered = filtered.filter(task => 
-        task.text.toLowerCase().includes(filter.toLowerCase())
+        task.title?.toLowerCase().includes(filter.toLowerCase())
       );
     }
 
@@ -63,7 +80,6 @@ const App = () => {
     endOfMonth.setMonth(endOfMonth.getMonth() + 1);
     endOfMonth.setDate(0);
 
-    // Navigation filter
     switch (activeNav) {
       case 'today':
         filtered = filtered.filter(task => {
@@ -96,7 +112,6 @@ const App = () => {
         break;
     }
 
-    // ✅ Create another copy before sorting
     return [...filtered].sort((a, b) => {
       if (activeNav === 'upcoming' || activeNav === 'this-week' || activeNav === 'this-month') {
         const dateA = getTaskDate(a);
@@ -111,13 +126,13 @@ const App = () => {
   };
 
   const filteredTasks = getFilteredTasks();
+  
+  // ✅ Safely calculate stats
+  const total = tasks.length || 0;
+  const done = tasks.filter ? tasks.filter(t => t.completed).length : 0;
 
-  // Stats
-  const total = tasks.length;
-  const done = tasks.filter(t => t.completed).length;
-
-  // Get upcoming tasks count
   const getUpcomingCount = () => {
+    if (!Array.isArray(tasks)) return 0;
     const today = getToday();
     const nextWeek = new Date(today);
     nextWeek.setDate(nextWeek.getDate() + 7);
@@ -128,53 +143,58 @@ const App = () => {
     }).length;
   };
 
-  // ========== CREATE ==========
-  const handleAddTask = () => {
-    const trimmed = inputValue.trim();
-    if (!trimmed) {
-      alert('Please enter a task.');
-      return;
-    }
-    
-    dispatch(addTask(trimmed));
-    setInputValue('');
-    inputRef.current?.focus();
-  };
-
-  // Quick add with date
-  const addTaskWithDate = (daysFromNow) => {
-    const trimmed = inputValue.trim();
-    if (!trimmed) {
-      alert('Please enter a task.');
-      return;
-    }
-
+  // Handlers
+  const getTaskCreatedAt = (daysFromNow = 0) => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
     date.setDate(date.getDate() + daysFromNow);
-
-    dispatch(addTask({ text: trimmed, date: date.toISOString() }));
-    setInputValue('');
-    inputRef.current?.focus();
+    return date.toISOString();
   };
 
-  // ========== UPDATE ==========
+  const addTask = async (daysFromNow = 0) => {
+    const trimmed = inputValue.trim();
+    if (!trimmed) {
+      alert('Please enter a task.');
+      return;
+    }
+
+    try {
+      await dispatch(addTaskAsync({
+        title: trimmed,
+        createdAt: getTaskCreatedAt(daysFromNow),
+      })).unwrap();
+      setInputValue('');
+      inputRef.current?.focus();
+    } catch (error) {
+      alert('Failed to add task: ' + error.message);
+    }
+  };
+
+  const handleAddTask = async () => {
+    await addTask(0);
+  };
+
   const startEditing = (id) => {
+    if (!Array.isArray(tasks)) return;
     const task = tasks.find(t => t.id === id);
     if (!task) return;
     setEditingId(id);
-    setEditText(task.text);
+    setEditText(task.title);
   };
 
-  const saveEdit = (id) => {
+  const saveEdit = async (id) => {
     const trimmed = editText.trim();
     if (!trimmed) {
       alert('Task cannot be empty.');
       return;
     }
-    dispatch(editTask({ id, text: trimmed }));
-    setEditingId(null);
-    setEditText('');
+    try {
+      await dispatch(editTaskAsync({ id, title: trimmed })).unwrap();
+      setEditingId(null);
+      setEditText('');
+    } catch (error) {
+      alert('Failed to edit task: ' + error.message);
+    }
   };
 
   const cancelEdit = () => {
@@ -182,38 +202,41 @@ const App = () => {
     setEditText('');
   };
 
-  const handleEditKeyDown = (e, id) => {
+  const handleEditKeyDown = async (e, id) => {
     if (e.key === 'Enter') {
-      saveEdit(id);
+      await saveEdit(id);
     } else if (e.key === 'Escape') {
       cancelEdit();
     }
   };
 
-  // ========== DELETE ==========
-  const handleDeleteTask = (id) => {
+  const handleDeleteTask = async (id) => {
     if (window.confirm('Delete this task?')) {
-      dispatch(deleteTask(id));
+      try {
+        await dispatch(deleteTaskAsync(id)).unwrap();
+      } catch (error) {
+        alert('Failed to delete task: ' + error.message);
+      }
     }
   };
 
-  // ========== TOGGLE COMPLETE ==========
-  const handleToggleComplete = (id) => {
-    dispatch(toggleComplete(id));
+  const handleToggleTask = async (id) => {
+    try {
+      await dispatch(toggleTaskAsync(id)).unwrap();
+    } catch (error) {
+      alert('Failed to toggle task: ' + error.message);
+    }
   };
 
-  // ========== NAVIGATION HANDLER ==========
   const handleNavClick = (nav) => {
     dispatch(setActiveNav(nav));
     dispatch(setFilter(''));
   };
 
-  // Enter key to add
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleAddTask();
   };
 
-  // Format date for display
   const formatDate = (date) => {
     if (!date) return '';
     const d = new Date(date);
@@ -228,7 +251,6 @@ const App = () => {
     return d.toLocaleDateString('en-US', options);
   };
 
-  // Get navigation label
   const getNavLabel = () => {
     switch (activeNav) {
       case 'today': return 'Today';
@@ -239,7 +261,6 @@ const App = () => {
     }
   };
 
-  // Get empty state message
   const getEmptyMessage = () => {
     switch (activeNav) {
       case 'today': 
@@ -256,6 +277,23 @@ const App = () => {
   };
 
   const emptyMessage = getEmptyMessage();
+
+  // Loading state
+  if (loading && tasks.length === 0) {
+    return (
+      <div className="app-container" style={{ 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        display: 'flex', 
+        height: '100vh' 
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <i className="fas fa-spinner fa-spin" style={{ fontSize: '3rem', color: '#1a4cff' }}></i>
+          <p style={{ marginTop: '1rem', color: '#4a5a72' }}>Loading tasks...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
@@ -329,6 +367,8 @@ const App = () => {
           <i className="fas fa-plus-circle input-icon"></i>
           <input
             type="text"
+            id="task-input"
+            name="task"
             placeholder="Enter task..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -339,14 +379,14 @@ const App = () => {
           <div className="quick-add-buttons">
             <button 
               className="btn quick-add" 
-              onClick={() => addTaskWithDate(0)}
+              onClick={() => addTask(0)}
               title="Add for today"
             >
               <i className="fas fa-calendar-day"></i> Today
             </button>
             <button 
               className="btn quick-add" 
-              onClick={() => addTaskWithDate(1)}
+              onClick={() => addTask(1)}
               title="Add for tomorrow"
             >
               <i className="fas fa-calendar-plus"></i> Tomorrow
@@ -362,6 +402,8 @@ const App = () => {
           <i className="fas fa-search search-icon"></i>
           <input
             type="text"
+            id="search-input"
+            name="search"
             placeholder={`Search ${getNavLabel().toLowerCase()}...`}
             value={filter}
             onChange={(e) => dispatch(setFilter(e.target.value))}
@@ -419,6 +461,8 @@ const App = () => {
                           <div className="edit-container">
                             <input
                               type="text"
+                              id={`edit-task-${task.id}`}
+                              name={`edit-task-${task.id}`}
                               className="edit-input"
                               value={editText}
                               onChange={(e) => setEditText(e.target.value)}
@@ -444,7 +488,7 @@ const App = () => {
                           </div>
                         ) : (
                           <span className={`task-text ${task.completed ? 'completed' : ''}`}>
-                            {task.text}
+                            {task.title}
                           </span>
                         )}
                         <span className={`status-badge ${task.completed ? 'done' : 'pending'}`}>
@@ -460,7 +504,7 @@ const App = () => {
                         <div className="action-group">
                           <button
                             className={`action-btn complete ${task.completed ? 'is-completed' : ''}`}
-                            onClick={() => handleToggleComplete(task.id)}
+                            onClick={() => handleToggleTask(task.id)}
                             title={task.completed ? "Mark as pending" : "Mark as complete"}
                           >
                             <i className={`fas ${task.completed ? 'fa-check-circle' : 'fa-circle'}`}></i>

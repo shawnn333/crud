@@ -8,7 +8,7 @@ export class GetTaskUseCase {
       throw new Error('Task ID is required');
     }
 
-    const task = await this.repository.getById(id);
+    const task = await this.repository.getTask(id);
     if (!task) {
       throw new Error(`Task with ID ${id} not found`);
     }

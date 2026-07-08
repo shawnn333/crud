@@ -11,7 +11,6 @@ export const TodoTable = ({
   onToggleComplete,
   onStartEditing,
   onDeleteTask,
-  formatDate,
   emptyTitle,
   emptySub,
 }) => {
@@ -40,17 +39,14 @@ export const TodoTable = ({
           <tr>
             <th style={{ width: '50px' }}>#</th>
             <th>Task</th>
-            <th style={{ width: '100px' }}>Date</th>
             <th style={{ width: '220px' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {tasks.map((task, index) => {
-            const dateStr = formatDate(task.createdAt);
-            
             return (
               <tr key={task.id} className={task.completed ? 'task-completed-row' : ''}>
-                <td className="task-number">{index + 1}</td>
+                <td className="task-number">{task.id}</td>
                 <td>
                   {editingId === task.id ? (
                     <div className="edit-container">
@@ -90,11 +86,6 @@ export const TodoTable = ({
                   )}
                   <span className={`status-badge ${task.completed ? 'done' : 'pending'}`}>
                     {task.completed ? '✓ Done' : '⏳ Pending'}
-                  </span>
-                </td>
-                <td>
-                  <span className="date-badge">
-                    <i className="fas fa-calendar-alt"></i> {dateStr}
                   </span>
                 </td>
                 <td>

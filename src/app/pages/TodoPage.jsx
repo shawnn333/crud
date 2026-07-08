@@ -132,21 +132,6 @@ export const TodoPage = () => {
   };
 
   // Format date
-  const formatDate = (date) => {
-    if (!date) return '';
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    
-    if (d.getTime() === today.getTime()) return 'Today';
-    if (d.getTime() === tomorrow.getTime()) return 'Tomorrow';
-    
-    const options = { month: 'short', day: 'numeric' };
-    return d.toLocaleDateString('en-US', options);
-  };
 
   // Get label
   const getNavLabel = () => {
@@ -257,7 +242,6 @@ export const TodoPage = () => {
             }
           }}
           onDeleteTask={handleDeleteTask}
-          formatDate={formatDate}
           emptyTitle={emptyMessage.title}
           emptySub={emptyMessage.sub}
         />

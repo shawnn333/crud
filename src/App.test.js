@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react';
+import { Provider } from 'react-redux';
 import App from './App';
+import { store } from './app/redux/store';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('renders the main task app interface', async () => {
+  render(
+    <Provider store={store}>
+      <App />
+    </Provider>
+  );
+
+  expect(await screen.findByText(/TaskFlow/i)).toBeInTheDocument();
 });

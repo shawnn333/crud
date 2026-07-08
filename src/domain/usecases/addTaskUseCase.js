@@ -10,7 +10,7 @@ export class AddTaskUseCase {
     }
 
     // Create the task
-    const task = await this.repository.create(title.trim());
+    const task = await this.repository.addTask(title.trim());
     return task;
   }
 }

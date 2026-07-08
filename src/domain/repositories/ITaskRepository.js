@@ -1,27 +1,19 @@
 export class ITaskRepository {
   /**
-   * Get all tasks
-   * @returns {Promise<Task[]>} Array of tasks
-   */
-  async getAll() {
-    throw new Error('Method not implemented');
-  }
-
-  /**
-   * Get a task by ID
-   * @param {number|string} id - Task ID
-   * @returns {Promise<Task|null>} Task or null if not found
-   */
-  async getById(id) {
-    throw new Error('Method not implemented');
-  }
-
-  /**
    * Create a new task
    * @param {string} title - Task title
    * @returns {Promise<Task>} Created task
    */
-  async create(title) {
+  async addTask(title) {
+    throw new Error('Method not implemented');
+  }
+
+  /**
+   * Remove a task by ID
+   * @param {number|string} id - Task ID
+   * @returns {Promise<boolean>} True if deleted, false if not found
+   */
+  async removeTask(id) {
     throw new Error('Method not implemented');
   }
 
@@ -31,17 +23,45 @@ export class ITaskRepository {
    * @param {Object} data - Task data to update
    * @returns {Promise<Task|null>} Updated task or null if not found
    */
-  async update(id, data) {
+  async updateTask(id, data) {
     throw new Error('Method not implemented');
   }
 
   /**
-   * Delete a task
-   * @param {number|string} id - Task ID
-   * @returns {Promise<boolean>} True if deleted, false if not found
+   * Get all tasks
+   * @returns {Promise<Task[]>} Array of tasks
    */
-  async delete(id) {
+  async getAllTasks() {
     throw new Error('Method not implemented');
+  }
+
+  /**
+   * Get a task by ID
+   * @param {number|string} id - Task ID
+   * @returns {Promise<Task|null>} Task or null if not found
+   */
+  async getTask(id) {
+    throw new Error('Method not implemented');
+  }
+
+  async getAll() {
+    return this.getAllTasks();
+  }
+
+  async getById(id) {
+    return this.getTask(id);
+  }
+
+  async create(title) {
+    return this.addTask(title);
+  }
+
+  async update(id, data) {
+    return this.updateTask(id, data);
+  }
+
+  async delete(id) {
+    return this.removeTask(id);
   }
 
   /**

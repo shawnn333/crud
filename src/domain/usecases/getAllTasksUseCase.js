@@ -4,7 +4,7 @@ export class GetAllTasksUseCase {
   }
 
   async execute(filter = null, searchTerm = null) {
-    let tasks = await this.repository.getAll();
+    let tasks = await this.repository.getAllTasks();
 
     // Apply search if provided
     if (searchTerm && searchTerm.trim()) {

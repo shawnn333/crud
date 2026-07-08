@@ -62,11 +62,11 @@ export const resetRepository = (type = repositoryType) => {
  * @returns {Object} Use cases
  */
 export const getUseCases = (repository = getTaskRepository()) => {
-  const { AddTaskUseCase } = require('../usecases/addTaskUseCase');
-  const { GetAllTasksUseCase } = require('../usecases/getAllTasksUseCase');
-  const { GetTaskUseCase } = require('../usecases/getTaskUseCase');
-  const { RemoveTaskUseCase } = require('../usecases/removeTaskUseCase');
-  const { UpdateTaskUseCase } = require('../usecases/updateTaskUseCase');
+  const { AddTaskUseCase } = require('../domain/usecases/addTaskUseCase');
+  const { GetAllTasksUseCase } = require('../domain/usecases/getAllTasksUseCase');
+  const { GetTaskUseCase } = require('../domain/usecases/getTaskUseCase');
+  const { RemoveTaskUseCase } = require('../domain/usecases/removeTaskUseCase');
+  const { UpdateTaskUseCase } = require('../domain/usecases/updateTaskUseCase');
 
   return {
     addTask: new AddTaskUseCase(repository),

@@ -9,14 +9,29 @@ export class Task {
 
     this.id = id;
     this.title = title.toString().trim();
+    this.completed = false;
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
   }
 
-  // Update task text
-  updateText(newText) {
-    if (!newText || !newText.trim()) {
-      throw new Error('Task text cannot be empty');
+  // Update task title
+  updateTitle(newTitle) {
+    if (!newTitle || !newTitle.trim()) {
+      throw new Error('Task title cannot be empty');
     }
-    this.text = newText.trim();
+    this.title = newTitle.trim();
+    this.updatedAt = new Date();
+    return this;
+  }
+
+  // Update task text (alias)
+  updateText(newText) {
+    return this.updateTitle(newText);
+  }
+
+  // Toggle task completion
+  toggleComplete() {
+    this.completed = !this.completed;
     this.updatedAt = new Date();
     return this;
   }
@@ -40,11 +55,22 @@ export class Task {
     });
   }
 
-  // Convert to plain object
+  // Convert to plain object for API consumers
   toJSON() {
     return {
       id: this.id,
       title: this.title
+    };
+  }
+
+  // Convert to plain object for storage persistence
+  toStorageJSON() {
+    return {
+      id: this.id,
+      title: this.title,
+      completed: this.completed,
+      createdAt: this.createdAt?.toISOString(),
+      updatedAt: this.updatedAt?.toISOString()
     };
   }
 
@@ -55,6 +81,12 @@ export class Task {
       data.title ?? data.text ?? ''
     );
 
+    if (data.completed !== undefined) {
+      task.completed = data.completed;
+    }
+    if (data.createdAt) {
+      task.createdAt = new Date(data.createdAt);
+    }
     if (data.updatedAt) {
       task.updatedAt = new Date(data.updatedAt);
     }

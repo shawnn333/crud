@@ -13,7 +13,7 @@ export class UpdateTaskUseCase {
       throw new Error('Task title cannot be empty');
     }
 
-    const task = await this.repository.update(id, data);
+    const task = await this.repository.updateTask(id, data);
     if (!task) {
       throw new Error(`Task with ID ${id} not found`);
     }

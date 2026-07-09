@@ -1,4 +1,3 @@
-// redux/task/task.reducers.js
 import * as types from './task.types';
 
 const initialState = {
@@ -11,9 +10,7 @@ const initialState = {
 
 export const taskReducer = (state = initialState, action) => {
   switch (action.type) {
-    // ============================================
-    // ✅ SYNC REDUCERS
-    // ============================================
+
     case types.ADD_TASK:
       return {
         ...state,
@@ -82,9 +79,6 @@ export const taskReducer = (state = initialState, action) => {
         tasks: action.payload,
       };
 
-    // ============================================
-    // ✅ ASYNC REDUCERS (for Thunk)
-    // ============================================
     case types.FETCH_TASKS_REQUEST:
       return {
         ...state,

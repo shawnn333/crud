@@ -1,12 +1,10 @@
-// app/redux/task/task.slice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-// Async thunks
 export const fetchTasksAsync = createAsyncThunk(
   'tasks/fetchTasks',
   async (_, { rejectWithValue }) => {
     try {
-      // Primary source: app's persisted Redux state
+
       const stored = localStorage.getItem('tasksState');
       if (stored) {
         try {
@@ -19,7 +17,6 @@ export const fetchTasksAsync = createAsyncThunk(
         }
       }
 
-      // Fallback: repository localStorage key used by LocalStorageTaskRepository
       const repoStored = localStorage.getItem('tasks_data');
       if (repoStored) {
         try {

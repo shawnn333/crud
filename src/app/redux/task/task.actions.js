@@ -1,9 +1,5 @@
-// redux/task/task.actions.js
 import * as types from './task.types';
 
-// ============================================
-// ✅ SYNC ACTION CREATORS
-// ============================================
 export const addTask = (task) => ({
   type: types.ADD_TASK,
   payload: task,
@@ -53,11 +49,7 @@ export const setTasks = (tasks) => ({
   payload: tasks,
 });
 
-// ============================================
-// ✅ ASYNC THUNK ACTION CREATORS
-// ============================================
 
-// 1. Fetch Tasks
 export const fetchTasks = () => {
   return async (dispatch) => {
     dispatch({ type: types.FETCH_TASKS_REQUEST });

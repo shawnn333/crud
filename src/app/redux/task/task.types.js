@@ -1,8 +1,3 @@
-// redux/task/task.types.js
-
-// ============================================
-// ✅ SYNC ACTION TYPES
-// ============================================
 export const ADD_TASK = 'tasks/addTask';
 export const DELETE_TASK = 'tasks/deleteTask';
 export const TOGGLE_TASK = 'tasks/toggleTask';
@@ -14,9 +9,7 @@ export const SET_ERROR = 'tasks/setError';
 export const CLEAR_TASKS = 'tasks/clearTasks';
 export const SET_TASKS = 'tasks/setTasks';
 
-// ============================================
-// ✅ ASYNC ACTION TYPES (for Thunk)
-// ============================================
+
 export const FETCH_TASKS_REQUEST = 'tasks/fetchTasksRequest';
 export const FETCH_TASKS_SUCCESS = 'tasks/fetchTasksSuccess';
 export const FETCH_TASKS_FAILURE = 'tasks/fetchTasksFailure';
@@ -37,18 +30,14 @@ export const EDIT_TASK_REQUEST = 'tasks/editTaskRequest';
 export const EDIT_TASK_SUCCESS = 'tasks/editTaskSuccess';
 export const EDIT_TASK_FAILURE = 'tasks/editTaskFailure';
 
-// ============================================
-// ✅ NAVIGATION TYPES
-// ============================================
+
 export const NAV_ALL = 'all';
 export const NAV_TODAY = 'today';
 export const NAV_UPCOMING = 'upcoming';
 export const NAV_THIS_WEEK = 'this-week';
 export const NAV_THIS_MONTH = 'this-month';
 
-// ============================================
-// ✅ FILTER TYPES
-// ============================================
+
 export const FILTER_ALL = 'all';
 export const FILTER_COMPLETED = 'completed';
 export const FILTER_PENDING = 'pending';

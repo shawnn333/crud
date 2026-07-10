@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
-  addTaskAsync,      // ✅ Changed to async thunk
-  deleteTaskAsync,   // ✅ Changed to async thunk
-  toggleTaskAsync,   // ✅ Changed to async thunk
-  editTaskAsync,     // ✅ Changed to async thunk
-  fetchTasksAsync,   // ✅ Added to load tasks on mount
+  addTaskAsync,    
+  deleteTaskAsync,  
+  toggleTaskAsync, 
+  editTaskAsync,     
+  fetchTasksAsync,   
   setFilter, 
   setActiveNav 
 } from '../../redux/task/task.slice';
@@ -19,37 +19,33 @@ import { getAllTasksUseCase } from '../boot';
 export const TodoPage = () => {
   const dispatch = useDispatch();
   
-  // Redux state
+  // redux state
   const tasks = useSelector((state) => state.tasks.tasks);
   const filter = useSelector((state) => state.tasks.filter);
   const activeNav = useSelector((state) => state.tasks.activeNav);
   const loading = useSelector((state) => state.tasks.loading);
   const error = useSelector((state) => state.tasks.error);
   
-  // Local state
+  // local state
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   
-  // ✅ Load tasks on component mount
   useEffect(() => {
     dispatch(fetchTasksAsync());
   }, [dispatch]);
 
-  // ✅ Show error if any
   useEffect(() => {
     if (error) {
       console.error('Error:', error);
     }
   }, [error]);
 
-  // Stats
+
   const total = tasks.length;
   const done = tasks.filter(t => t.completed).length;
 
-  // Get filtered tasks using use case
   const filteredTasks = getAllTasksUseCase.execute(filter, activeNav);
 
-  // Get upcoming count
   const getUpcomingCount = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -63,7 +59,6 @@ export const TodoPage = () => {
     }).length;
   };
 
-  // ✅ Handlers with async thunks and loading states
   const handleAddTask = async (text) => {
     try {
       await dispatch(addTaskAsync({ title: text, createdAt: new Date().toISOString() })).unwrap();
@@ -143,7 +138,6 @@ export const TodoPage = () => {
     }
   };
 
-  // Get empty message
   const getEmptyMessage = () => {
     switch (activeNav) {
       case 'today': 
@@ -161,7 +155,6 @@ export const TodoPage = () => {
 
   const emptyMessage = getEmptyMessage();
 
-  // ✅ Show loading state
   if (loading && tasks.length === 0) {
     return (
       <div className="app-container" style={{ 

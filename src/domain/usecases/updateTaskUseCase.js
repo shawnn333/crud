@@ -8,7 +8,6 @@ export class UpdateTaskUseCase {
       throw new Error('Task ID is required');
     }
 
-    // Validate data
     if (data.title && !data.title.trim()) {
       throw new Error('Task title cannot be empty');
     }

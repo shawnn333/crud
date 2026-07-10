@@ -1,7 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import taskSliceReducer from './task/task.slice';
 
-// Load state from localStorage
 const loadState = () => {
   try {
     const serializedState = localStorage.getItem('tasksState');
@@ -38,7 +37,6 @@ const loadState = () => {
   }
 };
 
-// Save state to localStorage
 const saveState = (state) => {
   try {
     const serializedState = JSON.stringify(state);
@@ -50,10 +48,6 @@ const saveState = (state) => {
 
 const preloadedState = loadState();
 
-// Allow enabling Redux DevTools in production via a runtime localStorage flag.
-// This keeps DevTools off by default in production but lets you enable it
-// for debugging on the published site by running:
-// localStorage.setItem('enableReduxDev','true'); location.reload();
 let devToolsEnabled = false;
 try {
   const runtimeFlag = typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem('enableReduxDev') === 'true';

@@ -10,7 +10,6 @@ export class UpdateTaskUseCase {
       throw new Error('Task ID is required');
     }
 
-    // Validate data
     if (data.title && !data.title.trim()) {
       throw new Error('Task title cannot be empty');
     }
@@ -20,8 +19,6 @@ export class UpdateTaskUseCase {
       throw new Error(`Task with ID ${id} not found`);
     }
 
-    // repository.updateTask is void, so we mutate a real domain entity
-    // here and hand the finished copy back to the caller ourselves.
     const task = Task.fromJSON(existing);
     if (data.title) {
       task.updateTitle(data.title);

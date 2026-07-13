@@ -2,25 +2,12 @@ import { Task } from '../../domain/entities/Task.js';
 
 const STORAGE_KEY = 'tasks_data';
 
-/**
- * LocalStorageTaskRepository - concrete implementation of TaskRepository
- * (see ../../domain/repositories/TaskRepository.ts for the contract).
- *
- * This is the ONLY place in the app allowed to touch localStorage for
- * task data. Redux thunks / React components must go through the use
- * cases, which depend on this repository - never on localStorage directly.
- *
- * Mutation methods return void per team convention: the repository's
- * only job is to persist. Callers (use cases) already hold or can
- * query for the data they need.
- */
 export class LocalStorageTaskRepository {
   constructor() {
     this.tasks = [];
     this.loadFromStorage();
   }
 
-  // Load tasks from localStorage
   loadFromStorage() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -34,7 +21,6 @@ export class LocalStorageTaskRepository {
     }
   }
 
-  // Save tasks to localStorage
   saveToStorage() {
     try {
       const data = {

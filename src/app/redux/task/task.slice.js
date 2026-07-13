@@ -1,9 +1,3 @@
-// app/redux/task/task.slice.js
-//
-// State-management layer. This file must NEVER touch localStorage or any
-// other data source directly - it only calls domain use cases, which in
-// turn talk to the repository (src/data/repositories/*). That repository
-// is the single place allowed to read/write storage.
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   addTaskUseCase,
@@ -13,7 +7,6 @@ import {
   toggleTaskCompletionUseCase,
 } from '../../boot';
 
-// Async thunks - each one delegates to a use case, never to storage directly
 export const fetchTasksAsync = createAsyncThunk(
   'tasks/fetchTasks',
   async (_, { rejectWithValue }) => {
@@ -73,7 +66,7 @@ export const editTaskAsync = createAsyncThunk(
 );
 
 const initialState = {
-  tasks: [], // Always an array
+  tasks: [], 
   filter: '',
   activeNav: 'all',
   loading: false,
@@ -114,8 +107,7 @@ const taskSlice = createSlice({
         state.error = null;
       })
       .addCase(addTaskAsync.fulfilled, (state, action) => {
-        // The repository (via the use case) is the source of truth for
-        // the created task - no re-deriving fields here.
+
         state.tasks.push(action.payload);
         state.loading = false;
       })

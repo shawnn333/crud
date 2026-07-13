@@ -119,18 +119,4 @@ export class LocalStorageTaskRepository extends ITaskRepository {
   async count() {
     return this.tasks.length;
   }
-
-  // Add sample data if empty
-  addSampleDataIfEmpty() {
-    if (this.tasks.length === 0) {
-      const sampleTasks = [
-        'Review project proposal',
-        'Design new sidebar',
-        'Write documentation',
-        'Fix navigation bug',
-        'Deploy to production'
-      ];
-      sampleTasks.forEach(text => this.addTask(text));
-    }
-  }
 }

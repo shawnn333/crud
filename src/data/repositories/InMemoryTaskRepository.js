@@ -74,16 +74,4 @@ export class InMemoryTaskRepository extends ITaskRepository {
   async count() {
     return this.tasks.length;
   }
-
-  // Utility method to add sample data
-  addSampleData() {
-    const sampleTasks = [
-      'Review project proposal',
-      'Design new sidebar',
-      'Write documentation',
-      'Fix navigation bug',
-      'Deploy to production'
-    ];
-    sampleTasks.forEach(text => this.addTask(text));
-  }
 }

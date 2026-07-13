@@ -8,8 +8,9 @@ import { ToggleTaskCompletionUseCase } from '../domain/usecases/toggleTaskComple
 
 // Create the single repository instance for the app.
 // This is the ONLY object allowed to touch localStorage for tasks.
+// Tasks you add persist across refresh; deleting a task removes it for
+// good (no auto-reseeding of sample/demo tasks).
 const taskRepository = new LocalStorageTaskRepository();
-taskRepository.addSampleDataIfEmpty();
 
 // Create and export use cases - these are what the Redux/state layer
 // and views should depend on. Nothing above this line should be

@@ -1,6 +1,6 @@
 import { InMemoryTaskRepository } from '../../data/repositories/InMemoryTaskRepository.js';
 
-describe('ITaskRepository contract', () => {
+describe('TaskRepository contract', () => {
   it('exposes the expected task repository methods', () => {
     const repository = new InMemoryTaskRepository();
 

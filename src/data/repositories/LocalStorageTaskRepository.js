@@ -1,36 +1,44 @@
-import { ITaskRepository } from '../../domain/repositories/ITaskRepository.js';
 import { Task } from '../../domain/entities/Task.js';
 
 const STORAGE_KEY = 'tasks_data';
 
-export class LocalStorageTaskRepository extends ITaskRepository {
+/**
+ * LocalStorageTaskRepository - concrete implementation of TaskRepository
+ * (see ../../domain/repositories/TaskRepository.ts for the contract).
+ *
+ * This is the ONLY place in the app allowed to touch localStorage for
+ * task data. Redux thunks / React components must go through the use
+ * cases, which depend on this repository - never on localStorage directly.
+ *
+ * Mutation methods return void per team convention: the repository's
+ * only job is to persist. Callers (use cases) already hold or can
+ * query for the data they need.
+ */
+export class LocalStorageTaskRepository {
   constructor() {
-    super();
     this.tasks = [];
-    this.nextId = 1;
     this.loadFromStorage();
   }
 
+  // Load tasks from localStorage
   loadFromStorage() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) {
         const parsed = JSON.parse(data);
-        this.tasks = parsed.tasks.map(t => Task.fromJSON(t));
-        this.nextId = parsed.nextId || this.getMaxId() + 1;
+        this.tasks = (parsed.tasks || []).map(t => Task.fromJSON(t));
       }
     } catch (error) {
       console.warn('Failed to load tasks from localStorage:', error);
       this.tasks = [];
-      this.nextId = 1;
     }
   }
 
+  // Save tasks to localStorage
   saveToStorage() {
     try {
       const data = {
-        tasks: this.tasks.map(t => t.toStorageJSON()),
-        nextId: this.nextId
+        tasks: this.tasks.map(t => t.toStorageJSON())
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
@@ -38,35 +46,23 @@ export class LocalStorageTaskRepository extends ITaskRepository {
     }
   }
 
-  getMaxId() {
-    if (this.tasks.length === 0) return 0;
-    return Math.max(...this.tasks.map(t => t.id));
-  }
-
-  async addTask(title, createdAt) {
-    const task = new Task(this.nextId++, title, createdAt);
+  async addTask(task) {
     this.tasks.push(task);
     this.saveToStorage();
-    return task.toJSON();
   }
 
-  async removeTask(id) {
-    const index = this.tasks.findIndex(t => t.id === id);
-    if (index === -1) return false;
+  async removeTask(task) {
+    const index = this.tasks.findIndex(t => t.id === task.id);
+    if (index === -1) return;
     this.tasks.splice(index, 1);
     this.saveToStorage();
-    return true;
   }
 
-  async updateTask(id, data) {
-    const task = this.tasks.find(t => t.id === id);
-    if (!task) return null;
-
-    if (data.title) {
-      task.updateTitle(data.title);
-    }
+  async updateTask(task) {
+    const index = this.tasks.findIndex(t => t.id === task.id);
+    if (index === -1) return;
+    this.tasks[index] = task;
     this.saveToStorage();
-    return task.toJSON();
   }
 
   async getAllTasks() {
@@ -80,10 +76,9 @@ export class LocalStorageTaskRepository extends ITaskRepository {
 
   async toggleComplete(id) {
     const task = this.tasks.find(t => t.id === id);
-    if (!task) return null;
+    if (!task) return;
     task.toggleComplete();
     this.saveToStorage();
-    return task.toJSON();
   }
 
   async getByStatus(completed) {
@@ -102,7 +97,6 @@ export class LocalStorageTaskRepository extends ITaskRepository {
 
   async clearAll() {
     this.tasks = [];
-    this.nextId = 1;
     this.saveToStorage();
   }
 

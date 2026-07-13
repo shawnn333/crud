@@ -14,6 +14,16 @@ export class Task {
     this.updatedAt = new Date();
   }
 
+  // Factory: create a brand-new Task with a freshly generated id.
+  // Keeps id generation a domain concern instead of the repository's,
+  // so repository "add" methods can just persist and return void.
+  static create(title, createdAt) {
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    return new Task(id, title, createdAt);
+  }
+
   // Update task title
   updateTitle(newTitle) {
     if (!newTitle || !newTitle.trim()) {

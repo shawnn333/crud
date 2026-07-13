@@ -1,35 +1,32 @@
-import { ITaskRepository } from '../../domain/repositories/ITaskRepository.js';
-import { Task } from '../../domain/entities/Task.js';
-
-
-export class InMemoryTaskRepository extends ITaskRepository {
+/**
+ * InMemoryTaskRepository - concrete implementation of TaskRepository
+ * (see ../../domain/repositories/TaskRepository.ts for the contract).
+ * All actual data access/storage logic lives here, never in the view
+ * or state-management layer.
+ *
+ * Mutation methods return void per team convention: the repository's
+ * only job is to persist. Callers (use cases) already hold or can
+ * query for the data they need.
+ */
+export class InMemoryTaskRepository {
   constructor() {
-    super();
     this.tasks = [];
-    this.nextId = 1;
   }
 
-  async addTask(title, createdAt) {
-    const task = new Task(this.nextId++, title, createdAt);
+  async addTask(task) {
     this.tasks.push(task);
-    return task.toJSON();
   }
 
-  async removeTask(id) {
-    const index = this.tasks.findIndex(t => t.id === id);
-    if (index === -1) return false;
+  async removeTask(task) {
+    const index = this.tasks.findIndex(t => t.id === task.id);
+    if (index === -1) return;
     this.tasks.splice(index, 1);
-    return true;
   }
 
-  async updateTask(id, data) {
-    const task = this.tasks.find(t => t.id === id);
-    if (!task) return null;
-
-    if (data.title) {
-      task.updateTitle(data.title);
-    }
-    return task.toJSON();
+  async updateTask(task) {
+    const index = this.tasks.findIndex(t => t.id === task.id);
+    if (index === -1) return;
+    this.tasks[index] = task;
   }
 
   async getAllTasks() {
@@ -43,9 +40,8 @@ export class InMemoryTaskRepository extends ITaskRepository {
 
   async toggleComplete(id) {
     const task = this.tasks.find(t => t.id === id);
-    if (!task) return null;
+    if (!task) return;
     task.toggleComplete();
-    return task.toJSON();
   }
 
   async getByStatus(completed) {
@@ -64,7 +60,6 @@ export class InMemoryTaskRepository extends ITaskRepository {
 
   async clearAll() {
     this.tasks = [];
-    this.nextId = 1;
   }
 
   async count() {

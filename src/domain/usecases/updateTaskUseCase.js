@@ -1,3 +1,5 @@
+import { Task } from '../entities/Task.js';
+
 export class UpdateTaskUseCase {
   constructor(repository) {
     this.repository = repository;
@@ -13,12 +15,19 @@ export class UpdateTaskUseCase {
       throw new Error('Task title cannot be empty');
     }
 
-    const task = await this.repository.updateTask(id, data);
-    if (!task) {
+    const existing = await this.repository.getTask(id);
+    if (!existing) {
       throw new Error(`Task with ID ${id} not found`);
     }
 
-    return task;
-  }
+    // repository.updateTask is void, so we mutate a real domain entity
+    // here and hand the finished copy back to the caller ourselves.
+    const task = Task.fromJSON(existing);
+    if (data.title) {
+      task.updateTitle(data.title);
+    }
 
+    await this.repository.updateTask(task);
+    return task.toJSON();
+  }
 }

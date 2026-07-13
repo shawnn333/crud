@@ -28,11 +28,14 @@ export class ToggleTaskCompletionUseCase {
       }
     }
 
-    const task = await this.repository.toggleComplete(id);
-    if (!task) {
+    // repository.toggleComplete is void now, so we re-fetch to hand
+    // the caller the fresh state.
+    await this.repository.toggleComplete(id);
+    const updated = await this.repository.getTask(id);
+    if (!updated) {
       throw new Error(`Task with ID ${id} not found`);
     }
 
-    return task;
+    return updated;
   }
 }

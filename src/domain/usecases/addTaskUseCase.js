@@ -1,3 +1,5 @@
+import { Task } from '../entities/Task.js';
+
 export class AddTaskUseCase {
   constructor(repository) {
     this.repository = repository;
@@ -9,8 +11,10 @@ export class AddTaskUseCase {
       throw new Error('Task title cannot be empty');
     }
 
-    // Create the task
-    const task = await this.repository.addTask(title.trim(), createdAt);
-    return task;
+    // Id generation is a domain concern now (repository.addTask is void),
+    // so the entity is fully built here before being handed to the repo.
+    const task = Task.create(title.trim(), createdAt);
+    await this.repository.addTask(task);
+    return task.toJSON();
   }
 }

@@ -3,13 +3,6 @@ import { Task } from '../../domain/entities/Task.js';
 
 const STORAGE_KEY = 'tasks_data';
 
-/**
- * LocalStorageTaskRepository - concrete implementation of ITaskRepository.
- *
- * This is the ONLY place in the app allowed to touch localStorage for
- * task data. Redux thunks / React components must go through the use
- * cases, which depend on this repository - never on localStorage directly.
- */
 export class LocalStorageTaskRepository extends ITaskRepository {
   constructor() {
     super();
@@ -18,7 +11,6 @@ export class LocalStorageTaskRepository extends ITaskRepository {
     this.loadFromStorage();
   }
 
-  // Load tasks from localStorage
   loadFromStorage() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -34,7 +26,6 @@ export class LocalStorageTaskRepository extends ITaskRepository {
     }
   }
 
-  // Save tasks to localStorage
   saveToStorage() {
     try {
       const data = {
@@ -47,7 +38,6 @@ export class LocalStorageTaskRepository extends ITaskRepository {
     }
   }
 
-  // Get max ID from tasks
   getMaxId() {
     if (this.tasks.length === 0) return 0;
     return Math.max(...this.tasks.map(t => t.id));

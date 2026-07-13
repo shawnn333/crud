@@ -13,9 +13,6 @@ export class ToggleTaskCompletionUseCase {
       throw new Error(`Task with ID ${id} not found`);
     }
 
-    // Business rule: a task can only be marked as done once its
-    // scheduled date has arrived. Un-marking (done -> pending) is
-    // always allowed.
     if (!existing.completed) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -28,8 +25,6 @@ export class ToggleTaskCompletionUseCase {
       }
     }
 
-    // repository.toggleComplete is void now, so we re-fetch to hand
-    // the caller the fresh state.
     await this.repository.toggleComplete(id);
     const updated = await this.repository.getTask(id);
     if (!updated) {

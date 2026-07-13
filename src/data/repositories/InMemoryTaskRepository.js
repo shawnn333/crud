@@ -1,6 +1,11 @@
 import { ITaskRepository } from '../../domain/repositories/ITaskRepository.js';
 import { Task } from '../../domain/entities/Task.js';
 
+/**
+ * InMemoryTaskRepository - concrete implementation of ITaskRepository.
+ * All actual data access/storage logic lives here, never in the view
+ * or state-management layer.
+ */
 export class InMemoryTaskRepository extends ITaskRepository {
   constructor() {
     super();
@@ -8,8 +13,8 @@ export class InMemoryTaskRepository extends ITaskRepository {
     this.nextId = 1;
   }
 
-  async addTask(title) {
-    const task = new Task(this.nextId++, title);
+  async addTask(title, createdAt) {
+    const task = new Task(this.nextId++, title, createdAt);
     this.tasks.push(task);
     return task.toJSON();
   }
@@ -53,26 +58,6 @@ export class InMemoryTaskRepository extends ITaskRepository {
       .map(task => task.toJSON());
   }
 
-  async getAll() {
-    return this.getAllTasks();
-  }
-
-  async getById(id) {
-    return this.getTask(id);
-  }
-
-  async create(title) {
-    return this.addTask(title);
-  }
-
-  async update(id, data) {
-    return this.updateTask(id, data);
-  }
-
-  async delete(id) {
-    return this.removeTask(id);
-  }
-
   async search(query) {
     if (!query || !query.trim()) return this.getAllTasks();
     const searchTerm = query.toLowerCase().trim();
@@ -99,6 +84,6 @@ export class InMemoryTaskRepository extends ITaskRepository {
       'Fix navigation bug',
       'Deploy to production'
     ];
-    sampleTasks.forEach(text => this.create(text));
+    sampleTasks.forEach(text => this.addTask(text));
   }
 }

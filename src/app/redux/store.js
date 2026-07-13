@@ -1,53 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
 import taskSliceReducer from './task/task.slice';
 
-const loadState = () => {
-  try {
-    const serializedState = localStorage.getItem('tasksState');
-    if (serializedState === null) {
-      return undefined;
-    }
-    const parsed = JSON.parse(serializedState);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return undefined;
-    }
+// Note: Task persistence is handled entirely by LocalStorageTaskRepository
+// (src/data/repositories/LocalStorageTaskRepository.js), not here. Redux
+// only holds in-memory UI state; it is hydrated from the repository via
+// the fetchTasksAsync thunk on app start, and never reads/writes storage
+// directly.
 
-    const sliceState = parsed.tasks;
-    if (!sliceState || typeof sliceState !== 'object' || Array.isArray(sliceState)) {
-      return undefined;
-    }
-
-    if (sliceState.tasks && !Array.isArray(sliceState.tasks)) {
-      sliceState.tasks = [];
-    }
-    if (typeof sliceState.filter !== 'string') {
-      sliceState.filter = '';
-    }
-    if (typeof sliceState.activeNav !== 'string') {
-      sliceState.activeNav = 'all';
-    }
-    if (typeof sliceState.loading !== 'boolean') {
-      sliceState.loading = false;
-    }
-
-    return { tasks: sliceState };
-  } catch (err) {
-    console.warn('Failed to load state from localStorage:', err);
-    return undefined;
-  }
-};
-
-const saveState = (state) => {
-  try {
-    const serializedState = JSON.stringify(state);
-    localStorage.setItem('tasksState', serializedState);
-  } catch (err) {
-    console.warn('Failed to save state to localStorage:', err);
-  }
-};
-
-const preloadedState = loadState();
-
+// Allow enabling Redux DevTools in production via a runtime localStorage flag.
+// This keeps DevTools off by default in production but lets you enable it
+// for debugging on the published site by running:
+// localStorage.setItem('enableReduxDev','true'); location.reload();
 let devToolsEnabled = false;
 try {
   const runtimeFlag = typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem('enableReduxDev') === 'true';
@@ -60,12 +23,7 @@ export const store = configureStore({
   reducer: {
     tasks: taskSliceReducer,
   },
-  preloadedState,
   devTools: devToolsEnabled,
-});
-
-store.subscribe(() => {
-  saveState(store.getState());
 });
 
 export default store;

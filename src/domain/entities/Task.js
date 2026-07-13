@@ -1,5 +1,5 @@
 export class Task {
-  constructor(id, title) {
+  constructor(id, title, createdAt) {
     if (id === undefined || id === null) {
       throw new Error('Task id is required');
     }
@@ -10,7 +10,7 @@ export class Task {
     this.id = id;
     this.title = title.toString().trim();
     this.completed = false;
-    this.createdAt = new Date();
+    this.createdAt = createdAt ? new Date(createdAt) : new Date();
     this.updatedAt = new Date();
   }
 
@@ -29,20 +29,24 @@ export class Task {
     return this.updateTitle(newText);
   }
 
+  // Toggle task completion
   toggleComplete() {
     this.completed = !this.completed;
     this.updatedAt = new Date();
     return this;
   }
 
+  // Check if task is completed
   isCompleted() {
     return this.completed;
   }
 
+  // Check if task is pending
   isPending() {
     return !this.completed;
   }
 
+  // Get formatted date
   getFormattedDate() {
     return this.createdAt.toLocaleDateString('en-US', {
       month: 'short',
@@ -51,13 +55,18 @@ export class Task {
     });
   }
 
+  // Convert to plain object for API consumers
   toJSON() {
     return {
       id: this.id,
-      title: this.title
+      title: this.title,
+      completed: this.completed,
+      createdAt: this.createdAt?.toISOString(),
+      updatedAt: this.updatedAt?.toISOString()
     };
   }
 
+  // Convert to plain object for storage persistence
   toStorageJSON() {
     return {
       id: this.id,
@@ -68,6 +77,7 @@ export class Task {
     };
   }
 
+  // Create from plain object
   static fromJSON(data) {
     const task = new Task(
       data.id,

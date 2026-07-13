@@ -9,11 +9,6 @@ describe('ITaskRepository contract', () => {
     expect(typeof repository.updateTask).toBe('function');
     expect(typeof repository.getAllTasks).toBe('function');
     expect(typeof repository.getTask).toBe('function');
-    expect(typeof repository.getAll).toBe('function');
-    expect(typeof repository.getById).toBe('function');
-    expect(typeof repository.create).toBe('function');
-    expect(typeof repository.update).toBe('function');
-    expect(typeof repository.delete).toBe('function');
     expect(typeof repository.toggleComplete).toBe('function');
     expect(typeof repository.getByStatus).toBe('function');
     expect(typeof repository.search).toBe('function');

@@ -1,51 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
-  addTaskAsync,    
-  deleteTaskAsync,  
-  toggleTaskAsync, 
-  editTaskAsync,     
-  fetchTasksAsync,   
+  addTaskAsync,
+  deleteTaskAsync,
+  toggleTaskAsync,
+  editTaskAsync,
+  fetchTasksAsync,
   setFilter, 
   setActiveNav 
-} from '../../redux/task/task.slice';
+} from '../redux/task/task.slice';
 import { TodoSidebar } from '../components/todo/TodoSidebar';
 import { TodoInput } from '../components/todo/TodoInput';
 import { TodoSearch } from '../components/todo/TodoSearch';
 import { TodoTable } from '../components/todo/TodoTable';
 import { TodoStats } from '../components/todo/TodoStats';
-import { getAllTasksUseCase } from '../boot';
 
 export const TodoPage = () => {
   const dispatch = useDispatch();
   
-  // redux state
+  // Redux state - this is populated by fetchTasksAsync, which goes
+  // through getAllTasksUseCase -> the repository. The view never
+  // fetches data itself; it only reads what's already in the store
+  // and filters/sorts it for display.
   const tasks = useSelector((state) => state.tasks.tasks);
   const filter = useSelector((state) => state.tasks.filter);
   const activeNav = useSelector((state) => state.tasks.activeNav);
   const loading = useSelector((state) => state.tasks.loading);
   const error = useSelector((state) => state.tasks.error);
   
-  // local state
+  // Local state
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   
+  // Load tasks on component mount
   useEffect(() => {
     dispatch(fetchTasksAsync());
   }, [dispatch]);
 
+  // Show error if any
   useEffect(() => {
     if (error) {
       console.error('Error:', error);
     }
   }, [error]);
 
-
+  // Stats
   const total = tasks.length;
   const done = tasks.filter(t => t.completed).length;
 
-  const filteredTasks = getAllTasksUseCase.execute(filter, activeNav);
+  // Date-range helpers for nav-based filtering (presentation only - the
+  // task list itself already came from the repository via Redux)
+  const getTaskDate = (task) => {
+    const date = task.createdAt ? new Date(task.createdAt) : new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
 
+  const getFilteredTasks = () => {
+    let filtered = [...tasks];
+
+    if (filter && filter.trim()) {
+      const term = filter.toLowerCase().trim();
+      filtered = filtered.filter(t => t.title.toLowerCase().includes(term));
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    const endOfMonth = new Date(today);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+    endOfMonth.setDate(0);
+
+    switch (activeNav) {
+      case 'today':
+        filtered = filtered.filter(t => getTaskDate(t).getTime() === today.getTime());
+        break;
+      case 'upcoming':
+        filtered = filtered.filter(t => {
+          const d = getTaskDate(t).getTime();
+          return d > today.getTime() && d <= nextWeek.getTime();
+        });
+        break;
+      case 'this-week':
+        filtered = filtered.filter(t => {
+          const d = getTaskDate(t).getTime();
+          return d >= today.getTime() && d <= nextWeek.getTime();
+        });
+        break;
+      case 'this-month':
+        filtered = filtered.filter(t => {
+          const d = getTaskDate(t).getTime();
+          return d >= today.getTime() && d <= endOfMonth.getTime();
+        });
+        break;
+      default:
+        break;
+    }
+
+    return filtered.sort((a, b) => b.id - a.id);
+  };
+
+  const filteredTasks = getFilteredTasks();
+
+  // Get upcoming count
   const getUpcomingCount = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -59,6 +117,7 @@ export const TodoPage = () => {
     }).length;
   };
 
+  // Handlers with async thunks and loading states
   const handleAddTask = async (text) => {
     try {
       await dispatch(addTaskAsync({ title: text, createdAt: new Date().toISOString() })).unwrap();
@@ -125,7 +184,9 @@ export const TodoPage = () => {
     dispatch(setActiveNav('all'));
   };
 
+  // Format date
 
+  // Get label
   const getNavLabel = () => {
     switch (activeNav) {
       case 'today': return 'Today';
@@ -136,6 +197,7 @@ export const TodoPage = () => {
     }
   };
 
+  // Get empty message
   const getEmptyMessage = () => {
     switch (activeNav) {
       case 'today': 
@@ -153,6 +215,7 @@ export const TodoPage = () => {
 
   const emptyMessage = getEmptyMessage();
 
+  // ✅ Show loading state
   if (loading && tasks.length === 0) {
     return (
       <div className="app-container" style={{ 

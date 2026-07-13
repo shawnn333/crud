@@ -1,10 +1,22 @@
+/**
+ * ITaskRepository - Domain repository contract (pure interface).
+ *
+ * This is ONLY a contract. It must never contain real logic, storage
+ * details, or default/convenience implementations - those belong in
+ * the concrete classes under src/data/repositories/*.
+ *
+ * Only this file should change when the contract itself changes.
+ * Implementations (InMemoryTaskRepository, LocalStorageTaskRepository, ...)
+ * implement it; use cases depend on it, never on a concrete class.
+ */
 export class ITaskRepository {
   /**
    * Create a new task
    * @param {string} title - Task title
+   * @param {string|Date} [createdAt] - Optional creation date override
    * @returns {Promise<Task>} Created task
    */
-  async addTask(title) {
+  async addTask(title, createdAt) {
     throw new Error('Method not implemented');
   }
 
@@ -42,26 +54,6 @@ export class ITaskRepository {
    */
   async getTask(id) {
     throw new Error('Method not implemented');
-  }
-
-  async getAll() {
-    return this.getAllTasks();
-  }
-
-  async getById(id) {
-    return this.getTask(id);
-  }
-
-  async create(title) {
-    return this.addTask(title);
-  }
-
-  async update(id, data) {
-    return this.updateTask(id, data);
-  }
-
-  async delete(id) {
-    return this.removeTask(id);
   }
 
   /**

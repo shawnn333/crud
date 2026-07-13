@@ -1,10 +1,14 @@
 import { Task } from './Task';
 
 describe('Task serialization', () => {
-  it('only exposes id and title in the serialized output', () => {
+  it('exposes id, title, completed and dates in the serialized output', () => {
     const task = new Task(7, 'Write docs');
 
-    expect(task.toJSON()).toEqual({ id: 7, title: 'Write docs' });
-    expect(JSON.stringify(task)).toBe('{"id":7,"title":"Write docs"}');
+    const json = task.toJSON();
+    expect(json.id).toBe(7);
+    expect(json.title).toBe('Write docs');
+    expect(json.completed).toBe(false);
+    expect(typeof json.createdAt).toBe('string');
+    expect(typeof json.updatedAt).toBe('string');
   });
 });

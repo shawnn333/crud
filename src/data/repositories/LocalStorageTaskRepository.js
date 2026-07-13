@@ -3,6 +3,13 @@ import { Task } from '../../domain/entities/Task.js';
 
 const STORAGE_KEY = 'tasks_data';
 
+/**
+ * LocalStorageTaskRepository - concrete implementation of ITaskRepository.
+ *
+ * This is the ONLY place in the app allowed to touch localStorage for
+ * task data. Redux thunks / React components must go through the use
+ * cases, which depend on this repository - never on localStorage directly.
+ */
 export class LocalStorageTaskRepository extends ITaskRepository {
   constructor() {
     super();
@@ -46,8 +53,8 @@ export class LocalStorageTaskRepository extends ITaskRepository {
     return Math.max(...this.tasks.map(t => t.id));
   }
 
-  async addTask(title) {
-    const task = new Task(this.nextId++, title);
+  async addTask(title, createdAt) {
+    const task = new Task(this.nextId++, title, createdAt);
     this.tasks.push(task);
     this.saveToStorage();
     return task.toJSON();
@@ -95,26 +102,6 @@ export class LocalStorageTaskRepository extends ITaskRepository {
       .map(task => task.toJSON());
   }
 
-  async getAll() {
-    return this.getAllTasks();
-  }
-
-  async getById(id) {
-    return this.getTask(id);
-  }
-
-  async create(title) {
-    return this.addTask(title);
-  }
-
-  async update(id, data) {
-    return this.updateTask(id, data);
-  }
-
-  async delete(id) {
-    return this.removeTask(id);
-  }
-
   async search(query) {
     if (!query || !query.trim()) return this.getAllTasks();
     const searchTerm = query.toLowerCase().trim();
@@ -143,7 +130,7 @@ export class LocalStorageTaskRepository extends ITaskRepository {
         'Fix navigation bug',
         'Deploy to production'
       ];
-      sampleTasks.forEach(text => this.create(text));
+      sampleTasks.forEach(text => this.addTask(text));
     }
   }
 }

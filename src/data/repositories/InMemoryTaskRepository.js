@@ -1,11 +1,7 @@
 import { ITaskRepository } from '../../domain/repositories/ITaskRepository.js';
 import { Task } from '../../domain/entities/Task.js';
 
-/**
- * InMemoryTaskRepository - concrete implementation of ITaskRepository.
- * All actual data access/storage logic lives here, never in the view
- * or state-management layer.
- */
+
 export class InMemoryTaskRepository extends ITaskRepository {
   constructor() {
     super();

@@ -125,9 +125,7 @@ export const TodoPage = () => {
     dispatch(setActiveNav('all'));
   };
 
-  // Format date
 
-  // Get label
   const getNavLabel = () => {
     switch (activeNav) {
       case 'today': return 'Today';

@@ -1,13 +1,3 @@
-/**
- * InMemoryTaskRepository - concrete implementation of TaskRepository
- * (see ../../domain/repositories/TaskRepository.ts for the contract).
- * All actual data access/storage logic lives here, never in the view
- * or state-management layer.
- *
- * Mutation methods return void per team convention: the repository's
- * only job is to persist. Callers (use cases) already hold or can
- * query for the data they need.
- */
 export class InMemoryTaskRepository {
   constructor() {
     this.tasks = [];

@@ -15,5 +15,4 @@ export const removeTaskUseCase = new RemoveTaskUseCase(taskRepository);
 export const updateTaskUseCase = new UpdateTaskUseCase(taskRepository);
 export const toggleTaskCompletionUseCase = new ToggleTaskCompletionUseCase(taskRepository);
 
-// Export repository for direct access if needed (e.g. tests)
 export { taskRepository };

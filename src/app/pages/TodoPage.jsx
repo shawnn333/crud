@@ -18,38 +18,28 @@ import { TodoStats } from '../components/todo/TodoStats';
 export const TodoPage = () => {
   const dispatch = useDispatch();
   
-  // Redux state - this is populated by fetchTasksAsync, which goes
-  // through getAllTasksUseCase -> the repository. The view never
-  // fetches data itself; it only reads what's already in the store
-  // and filters/sorts it for display.
   const tasks = useSelector((state) => state.tasks.tasks);
   const filter = useSelector((state) => state.tasks.filter);
   const activeNav = useSelector((state) => state.tasks.activeNav);
   const loading = useSelector((state) => state.tasks.loading);
   const error = useSelector((state) => state.tasks.error);
   
-  // Local state
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   
-  // Load tasks on component mount
   useEffect(() => {
     dispatch(fetchTasksAsync());
   }, [dispatch]);
 
-  // Show error if any
   useEffect(() => {
     if (error) {
       console.error('Error:', error);
     }
   }, [error]);
 
-  // Stats
   const total = tasks.length;
   const done = tasks.filter(t => t.completed).length;
 
-  // Date-range helpers for nav-based filtering (presentation only - the
-  // task list itself already came from the repository via Redux)
   const getTaskDate = (task) => {
     const date = task.createdAt ? new Date(task.createdAt) : new Date();
     date.setHours(0, 0, 0, 0);
@@ -103,7 +93,6 @@ export const TodoPage = () => {
 
   const filteredTasks = getFilteredTasks();
 
-  // Get upcoming count
   const getUpcomingCount = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -117,7 +106,6 @@ export const TodoPage = () => {
     }).length;
   };
 
-  // Handlers with async thunks and loading states
   const handleAddTask = async (text) => {
     try {
       await dispatch(addTaskAsync({ title: text, createdAt: new Date().toISOString() })).unwrap();
@@ -184,9 +172,8 @@ export const TodoPage = () => {
     dispatch(setActiveNav('all'));
   };
 
-  // Format date
 
-  // Get label
+
   const getNavLabel = () => {
     switch (activeNav) {
       case 'today': return 'Today';
@@ -197,7 +184,6 @@ export const TodoPage = () => {
     }
   };
 
-  // Get empty message
   const getEmptyMessage = () => {
     switch (activeNav) {
       case 'today': 
@@ -215,7 +201,6 @@ export const TodoPage = () => {
 
   const emptyMessage = getEmptyMessage();
 
-  // ✅ Show loading state
   if (loading && tasks.length === 0) {
     return (
       <div className="app-container" style={{ 

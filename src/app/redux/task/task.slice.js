@@ -1,9 +1,3 @@
-// app/redux/task/task.slice.js
-//
-// State-management layer. This file must NEVER touch localStorage or any
-// other data source directly - it only calls domain use cases, which in
-// turn talk to the repository (src/data/repositories/*). That repository
-// is the single place allowed to read/write storage.
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   addTaskUseCase,

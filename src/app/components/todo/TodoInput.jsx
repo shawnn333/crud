@@ -7,6 +7,7 @@ export const TodoInput = ({ onAddTask, onAddWithDate }) => {
   const handleAdd = () => {
     const trimmed = inputValue.trim();
     if (trimmed) {
+      console.log('TodoInput: Sending task:', trimmed);
       onAddTask(trimmed);
       setInputValue('');
     }
@@ -43,7 +44,8 @@ export const TodoInput = ({ onAddTask, onAddWithDate }) => {
           onClick={() => {
             const trimmed = inputValue.trim();
             if (trimmed) {
-              onAddWithDate(0);
+              console.log('TodoInput: Sending task with today:', trimmed);
+              onAddWithDate(trimmed, 0);
               setInputValue('');
             }
           }}
@@ -57,7 +59,8 @@ export const TodoInput = ({ onAddTask, onAddWithDate }) => {
           onClick={() => {
             const trimmed = inputValue.trim();
             if (trimmed) {
-              onAddWithDate(1);
+              console.log('TodoInput: Sending task with tomorrow:', trimmed);
+              onAddWithDate(trimmed, 1);
               setInputValue('');
             }
           }}

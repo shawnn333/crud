@@ -10,9 +10,8 @@ export class RemoveTaskUseCase {
       throw new Error('Task ID is required');
     }
 
-    // repository.removeTask is void and takes the whole entity now
-    // (matches DeleteTodo(data: Todo): void), so we fetch and rebuild
-    // it first instead of relying on a returned "deleted" flag.
+    // removeTask takes the full entity per ITaskRepository, so fetch it
+    // first rather than passing a bare id.
     const existing = await this.repository.getTask(id);
     if (!existing) {
       throw new Error(`Task with ID ${id} not found`);
@@ -20,6 +19,6 @@ export class RemoveTaskUseCase {
 
     const task = Task.fromJSON(existing);
     await this.repository.removeTask(task);
-    return true;
+    return id;
   }
 }

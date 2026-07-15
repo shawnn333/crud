@@ -1,5 +1,12 @@
 import { Task } from "../entities/Task";
 
+/**
+ * TaskRepository - typed domain contract, mirrored from ITaskRepository.js.
+ *
+ * Per team convention: mutation methods take the full entity and return
+ * void. Callers already hold the entity they created/mutated, so nothing
+ * needs to be handed back.
+ */
 export interface TaskRepository {
 
   getAllTasks(): Promise<Task[]>;
@@ -11,6 +18,6 @@ export interface TaskRepository {
   addTask(task: Task): Promise<void>;
   updateTask(task: Task): Promise<void>;
   removeTask(task: Task): Promise<void>;
-  toggleComplete(id: number | string): Promise<void>;
+  toggleComplete(task: Task): Promise<void>;
   clearAll(): Promise<void>;
 }

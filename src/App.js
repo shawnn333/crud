@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  fetchTasksAsync,
   addTaskAsync,
   deleteTaskAsync,
   toggleTaskAsync,
@@ -9,13 +8,29 @@ import {
   setFilter,
   setActiveNav,
 } from './app/redux/task/task.slice';
+import { logoutAsync } from './app/redux/auth/auth.slice';
 import './App.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const App = () => {
   const dispatch = useDispatch();
+  const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
+  const currentUserEmail = useSelector((state) => state?.auth?.user?.email || '');
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      setShowLogoutOverlay(true);
+      setTimeout(async () => {
+        try {
+          await dispatch(logoutAsync()).unwrap();
+        } catch (error) {
+          console.error('Logout failed:', error);
+          setShowLogoutOverlay(false);
+        }
+      }, 500);
+    }
+  };
   
-  // ✅ Safely access state - ensure tasks is always an array
   const tasks = useSelector((state) => {
     const tasksData = state?.tasks?.tasks;
     return Array.isArray(tasksData) ? tasksData : [];
@@ -34,18 +49,12 @@ const App = () => {
     return typeof value === 'boolean' ? value : false;
   });
   
-  // Local state
   const [inputValue, setInputValue] = useState('');
+  const [selectedDays, setSelectedDays] = useState(0);
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   const inputRef = useRef(null);
 
-  // Load tasks on mount
-  useEffect(() => {
-    dispatch(fetchTasksAsync());
-  }, [dispatch]);
-
-  // Helper functions
   const getToday = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -64,7 +73,6 @@ const App = () => {
   };
 
   const getFilteredTasks = () => {
-    // ✅ tasks is already guaranteed to be an array
     let filtered = [...tasks];
 
     if (filter.trim()) {
@@ -127,7 +135,6 @@ const App = () => {
 
   const filteredTasks = getFilteredTasks();
   
-  // ✅ Safely calculate stats
   const total = tasks.length || 0;
   const done = tasks.filter ? tasks.filter(t => t.completed).length : 0;
 
@@ -143,7 +150,6 @@ const App = () => {
     }).length;
   };
 
-  // Handlers
   const getTaskCreatedAt = (daysFromNow = 0) => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
@@ -151,7 +157,7 @@ const App = () => {
     return date.toISOString();
   };
 
-  const addTask = async (daysFromNow = 0) => {
+  const handleAddTask = async () => {
     const trimmed = inputValue.trim();
     if (!trimmed) {
       alert('Please enter a task.');
@@ -161,23 +167,30 @@ const App = () => {
     try {
       await dispatch(addTaskAsync({
         title: trimmed,
-        createdAt: getTaskCreatedAt(daysFromNow),
+        createdAt: getTaskCreatedAt(selectedDays),
       })).unwrap();
       setInputValue('');
+      setSelectedDays(0);
       inputRef.current?.focus();
     } catch (error) {
-      alert('Failed to add task: ' + error.message);
+      alert('Failed to add task: ' + (typeof error === 'string' ? error : error.message));
     }
   };
 
-  const handleAddTask = async () => {
-    await addTask(0);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleAddTask();
+    }
   };
 
   const startEditing = (id) => {
     if (!Array.isArray(tasks)) return;
     const task = tasks.find(t => t.id === id);
     if (!task) return;
+    if (task.completed) {
+      alert('⚠️ This task is already completed and cannot be edited.');
+      return;
+    }
     setEditingId(id);
     setEditText(task.title);
   };
@@ -193,7 +206,7 @@ const App = () => {
       setEditingId(null);
       setEditText('');
     } catch (error) {
-      alert('Failed to edit task: ' + error.message);
+      alert('Failed to edit task: ' + (typeof error === 'string' ? error : error.message));
     }
   };
 
@@ -215,26 +228,43 @@ const App = () => {
       try {
         await dispatch(deleteTaskAsync(id)).unwrap();
       } catch (error) {
-        alert('Failed to delete task: ' + error.message);
+        alert('Failed to delete task: ' + (typeof error === 'string' ? error : error.message));
       }
     }
   };
 
   const handleToggleTask = async (id) => {
     try {
+      const task = tasks.find(t => t.id === id);
+      if (!task) {
+        alert('Task not found');
+        return;
+      }
+      
+      if (task.completed) {
+        alert('⚠️ This task is already completed. Completed tasks cannot be undone.');
+        return;
+      }
+      
+      const today = getToday();
+      const taskDate = getTaskDate(task);
+      
+      if (taskDate.getTime() > today.getTime()) {
+        alert('⚠️ This task is scheduled for tomorrow or a future date.\nYou cannot mark it as done today.');
+        return;
+      }
+      
       await dispatch(toggleTaskAsync(id)).unwrap();
+      
     } catch (error) {
-      alert(error.message);
+      const errorMsg = typeof error === 'string' ? error : error.message;
+      alert(errorMsg || 'Failed to toggle task');
     }
   };
 
   const handleNavClick = (nav) => {
     dispatch(setActiveNav(nav));
     dispatch(setFilter(''));
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleAddTask();
   };
 
   const formatDate = (date) => {
@@ -278,7 +308,6 @@ const App = () => {
 
   const emptyMessage = getEmptyMessage();
 
-  // Loading state
   if (loading && tasks.length === 0) {
     return (
       <div className="app-container" style={{ 
@@ -295,15 +324,42 @@ const App = () => {
     );
   }
 
+  if (showLogoutOverlay) {
+    return (
+      <div className="logout-overlay">
+        <div className="logout-box">
+          <div className="logout-icon">
+            <i className="fas fa-spinner fa-pulse"></i>
+          </div>
+          <h3>Logging out...</h3>
+          <p>Please wait</p>
+        </div>
+      </div>
+    );
+  }
+
+  const getSelectedDateLabel = () => {
+    return selectedDays === 0 ? 'Today' : 'Tomorrow';
+  };
+
   return (
     <div className="app-container">
-      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-brand">
           <i className="fas fa-check-circle brand-icon"></i>
           <span className="brand-text">TaskFlow</span>
           <span className="brand-badge">PRO</span>
         </div>
+
+        {currentUserEmail && (
+          <div className="user-info">
+            <i className="fas fa-user-circle"></i>
+            <span className="user-email">{currentUserEmail}</span>
+            <button className="logout-btn" onClick={handleLogout}>
+              <i className="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </div>
+        )}
 
         <nav className="sidebar-nav">
           <div 
@@ -339,11 +395,8 @@ const App = () => {
             <i className="fas fa-calendar"></i> This Month
           </div>
         </nav>
-
-        <div className="sidebar-divider"></div>
       </aside>
 
-      {/* Main Content */}
       <main className="main-content">
         <div className="todo-header">
           <h2>
@@ -362,14 +415,13 @@ const App = () => {
           </div>
         </div>
 
-        {/* Add Task Row */}
         <div className="input-row">
           <i className="fas fa-plus-circle input-icon"></i>
           <input
             type="text"
             id="task-input"
             name="task"
-            placeholder="Enter task..."
+            placeholder={`Enter task for ${getSelectedDateLabel()}...`}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -378,16 +430,16 @@ const App = () => {
           />
           <div className="quick-add-buttons">
             <button 
-              className="btn quick-add" 
-              onClick={() => addTask(0)}
-              title="Add for today"
+              className={`btn quick-add ${selectedDays === 0 ? 'active' : ''}`} 
+              onClick={() => setSelectedDays(0)}
+              title="Set task for today"
             >
               <i className="fas fa-calendar-day"></i> Today
             </button>
             <button 
-              className="btn quick-add" 
-              onClick={() => addTask(1)}
-              title="Add for tomorrow"
+              className={`btn quick-add ${selectedDays === 1 ? 'active' : ''}`} 
+              onClick={() => setSelectedDays(1)}
+              title="Set task for tomorrow"
             >
               <i className="fas fa-calendar-plus"></i> Tomorrow
             </button>
@@ -397,7 +449,6 @@ const App = () => {
           </button>
         </div>
 
-        {/* Search Row */}
         <div className="search-row">
           <i className="fas fa-search search-icon"></i>
           <input
@@ -409,34 +460,25 @@ const App = () => {
             onChange={(e) => dispatch(setFilter(e.target.value))}
           />
           {filter && (
-            <button 
-              className="clear-filter-btn"
-              onClick={() => dispatch(setFilter(''))}
-              title="Clear search"
-            >
+            <button className="clear-filter-btn" onClick={() => dispatch(setFilter(''))}>
               <i className="fas fa-times"></i>
             </button>
           )}
           {activeNav !== 'all' && (
-            <button 
-              className="clear-filter-btn"
-              onClick={() => handleNavClick('all')}
-              title="Show all tasks"
-            >
+            <button className="clear-filter-btn" onClick={() => handleNavClick('all')}>
               <i className="fas fa-home"></i>
             </button>
           )}
         </div>
 
-        {/* Table */}
         <div className="todo-table-wrapper">
           <table className="todo-table">
             <thead>
               <tr>
-                <th style={{ width: '50px' }}>#</th>
+                <th>#</th>
                 <th>Task</th>
-                <th style={{ width: '100px' }}>Date</th>
-                <th style={{ width: '220px' }}>Actions</th>
+                <th>Date</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -452,9 +494,10 @@ const App = () => {
                 filteredTasks.map((task, index) => {
                   const taskDate = getTaskDate(task);
                   const dateStr = formatDate(taskDate);
+                  const isCompleted = task.completed;
                   
                   return (
-                    <tr key={task.id} className={task.completed ? 'task-completed-row' : ''}>
+                    <tr key={task.id} className={isCompleted ? 'task-completed-row' : ''}>
                       <td className="task-number">{index + 1}</td>
                       <td>
                         {editingId === task.id ? (
@@ -470,29 +513,21 @@ const App = () => {
                               autoFocus
                             />
                             <div className="edit-actions">
-                              <button 
-                                className="edit-save-btn" 
-                                onClick={() => saveEdit(task.id)}
-                                title="Save changes"
-                              >
+                              <button className="edit-save-btn" onClick={() => saveEdit(task.id)}>
                                 <i className="fas fa-check"></i>
                               </button>
-                              <button 
-                                className="edit-cancel-btn" 
-                                onClick={cancelEdit}
-                                title="Cancel editing"
-                              >
+                              <button className="edit-cancel-btn" onClick={cancelEdit}>
                                 <i className="fas fa-times"></i>
                               </button>
                             </div>
                           </div>
                         ) : (
-                          <span className={`task-text ${task.completed ? 'completed' : ''}`}>
+                          <span className={`task-text ${isCompleted ? 'completed' : ''}`}>
                             {task.title}
                           </span>
                         )}
-                        <span className={`status-badge ${task.completed ? 'done' : 'pending'}`}>
-                          {task.completed ? '✓ Done' : '⏳ Pending'}
+                        <span className={`status-badge ${isCompleted ? 'done' : 'pending'}`}>
+                          {isCompleted ? '✓ Done' : '⏳ Pending'}
                         </span>
                       </td>
                       <td>
@@ -502,37 +537,45 @@ const App = () => {
                       </td>
                       <td>
                         <div className="action-group">
-                          <button
-                            className={`action-btn complete ${task.completed ? 'is-completed' : ''}`}
-                            onClick={() => handleToggleTask(task.id)}
-                            title={task.completed ? "Mark as pending" : "Mark as complete"}
-                          >
-                            <i className={`fas ${task.completed ? 'fa-check-circle' : 'fa-circle'}`}></i>
-                            <span className="action-label">
-                              {task.completed ? 'Done' : 'Mark'}
-                            </span>
-                          </button>
-
-                          {editingId === task.id ? (
-                            <button
-                              className="action-btn edit"
-                              onClick={() => saveEdit(task.id)}
-                              title="Save changes"
-                            >
-                              <i className="fas fa-save"></i>
-                              <span className="action-label">Save</span>
-                            </button>
+                          {!isCompleted ? (
+                            <>
+                              <button
+                                className="action-btn complete"
+                                onClick={() => handleToggleTask(task.id)}
+                                title="Mark as complete"
+                              >
+                                <i className="fas fa-circle"></i>
+                                <span className="action-label">Mark</span>
+                              </button>
+                              <button
+                                className="action-btn edit"
+                                onClick={() => startEditing(task.id)}
+                                title="Edit task"
+                              >
+                                <i className="fas fa-pen"></i>
+                                <span className="action-label">Edit</span>
+                              </button>
+                            </>
                           ) : (
-                            <button
-                              className="action-btn edit"
-                              onClick={() => startEditing(task.id)}
-                              title="Edit task"
-                            >
-                              <i className="fas fa-pen"></i>
-                              <span className="action-label">Edit</span>
-                            </button>
+                            <>
+                              <button
+                                className="action-btn complete is-completed"
+                                disabled
+                                title="Task is already completed"
+                              >
+                                <i className="fas fa-check-circle"></i>
+                                <span className="action-label">Done</span>
+                              </button>
+                              <button
+                                className="action-btn edit"
+                                disabled
+                                title="Cannot edit completed tasks"
+                              >
+                                <i className="fas fa-pen"></i>
+                                <span className="action-label">Edit</span>
+                              </button>
+                            </>
                           )}
-
                           <button
                             className="action-btn delete"
                             onClick={() => handleDeleteTask(task.id)}

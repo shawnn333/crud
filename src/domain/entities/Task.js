@@ -14,13 +14,24 @@ export class Task {
     this.updatedAt = new Date();
   }
 
+  // Factory: create a brand-new Task with a freshly generated id.
   static create(title, createdAt) {
-    const id = typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-    return new Task(id, title, createdAt);
+    // Make sure title is a string
+    const titleStr = typeof title === 'string' ? title : String(title);
+    
+    // Generate a proper UUID or timestamp-based ID
+    let id;
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      id = crypto.randomUUID();
+    } else {
+      // Fallback: timestamp + random string
+      id = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    }
+    
+    return new Task(id, titleStr, createdAt);
   }
 
+  // Update task title
   updateTitle(newTitle) {
     if (!newTitle || !newTitle.trim()) {
       throw new Error('Task title cannot be empty');
@@ -30,24 +41,29 @@ export class Task {
     return this;
   }
 
+  // Update task text (alias)
   updateText(newText) {
     return this.updateTitle(newText);
   }
 
+  // Toggle task completion
   toggleComplete() {
     this.completed = !this.completed;
     this.updatedAt = new Date();
     return this;
   }
 
+  // Check if task is completed
   isCompleted() {
     return this.completed;
   }
 
+  // Check if task is pending
   isPending() {
     return !this.completed;
   }
 
+  // Get formatted date
   getFormattedDate() {
     return this.createdAt.toLocaleDateString('en-US', {
       month: 'short',
@@ -56,6 +72,7 @@ export class Task {
     });
   }
 
+  // Convert to plain object for API consumers
   toJSON() {
     return {
       id: this.id,
@@ -66,6 +83,7 @@ export class Task {
     };
   }
 
+  // Convert to plain object for storage persistence
   toStorageJSON() {
     return {
       id: this.id,
@@ -76,10 +94,11 @@ export class Task {
     };
   }
 
+  // Create from plain object
   static fromJSON(data) {
     const task = new Task(
       data.id,
-      data.title ?? data.text ?? ''
+      data.title ?? data.text ?? 'Untitled'
     );
 
     if (data.completed !== undefined) {

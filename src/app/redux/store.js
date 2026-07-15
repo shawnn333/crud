@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import taskSliceReducer from './task/task.slice';
+import authSliceReducer from './auth/auth.slice';
 
 let devToolsEnabled = false;
 try {
@@ -12,6 +13,7 @@ try {
 export const store = configureStore({
   reducer: {
     tasks: taskSliceReducer,
+    auth: authSliceReducer,
   },
   devTools: devToolsEnabled,
 });

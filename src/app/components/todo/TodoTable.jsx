@@ -46,7 +46,7 @@ export const TodoTable = ({
           {tasks.map((task, index) => {
             return (
               <tr key={task.id} className={task.completed ? 'task-completed-row' : ''}>
-                <td className="task-number">{task.id}</td>
+                <td className="task-number">{index + 1}</td>
                 <td>
                   {editingId === task.id ? (
                     <div className="edit-container">
@@ -81,7 +81,7 @@ export const TodoTable = ({
                     </div>
                   ) : (
                     <span className={`task-text ${task.completed ? 'completed' : ''}`}>
-                      {task.title}
+                      {task.title || 'Untitled Task'}
                     </span>
                   )}
                   <span className={`status-badge ${task.completed ? 'done' : 'pending'}`}>

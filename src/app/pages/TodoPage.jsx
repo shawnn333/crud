@@ -7,7 +7,7 @@ import {
   editTaskAsync,
   fetchTasksAsync,
   setFilter, 
-  setActiveNav 
+  setActiveNav
 } from '../redux/task/task.slice';
 import { TodoSidebar } from '../components/todo/TodoSidebar';
 import { TodoInput } from '../components/todo/TodoInput';
@@ -28,12 +28,14 @@ export const TodoPage = () => {
   const [editText, setEditText] = useState('');
   
   useEffect(() => {
+    console.log('TodoPage: Fetching tasks...');
     dispatch(fetchTasksAsync());
   }, [dispatch]);
 
   useEffect(() => {
     if (error) {
-      console.error('Error:', error);
+      console.error('TodoPage: Error:', error);
+      alert('Error: ' + error);
     }
   }, [error]);
 
@@ -88,7 +90,11 @@ export const TodoPage = () => {
         break;
     }
 
-    return filtered.sort((a, b) => b.id - a.id);
+    return filtered.sort((a, b) => {
+      if (a.id > b.id) return -1;
+      if (a.id < b.id) return 1;
+      return 0;
+    });
   };
 
   const filteredTasks = getFilteredTasks();
@@ -107,50 +113,91 @@ export const TodoPage = () => {
   };
 
   const handleAddTask = async (text) => {
+    console.log('TodoPage: handleAddTask called with:', text);
+    
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      alert('Please enter a valid task description');
+      return;
+    }
+    
     try {
-      await dispatch(addTaskAsync({ title: text, createdAt: new Date().toISOString() })).unwrap();
+      const taskData = { 
+        title: text.trim(), 
+        createdAt: new Date().toISOString() 
+      };
+      console.log('TodoPage: Dispatching addTaskAsync with:', taskData);
+      
+      const result = await dispatch(addTaskAsync(taskData)).unwrap();
+      console.log('TodoPage: Task added successfully:', result);
     } catch (error) {
+      console.error('TodoPage: Failed to add task:', error);
       alert('Failed to add task: ' + error.message);
     }
   };
 
-  const handleAddWithDate = async (days) => {
-    const input = document.querySelector('#task-input');
-    if (input && input.value.trim()) {
-      try {
-        const date = new Date();
-        date.setHours(0,0,0,0);
-        date.setDate(date.getDate() + days);
-        await dispatch(addTaskAsync({ title: input.value, createdAt: date.toISOString() })).unwrap();
-        input.value = '';
-      } catch (error) {
-        alert('Failed to add task: ' + error.message);
-      }
+  const handleAddWithDate = async (text, days) => {
+    console.log('TodoPage: handleAddWithDate called with:', text, days);
+    
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      alert('Please enter a valid task description');
+      return;
+    }
+    
+    try {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() + days);
+      
+      const taskData = { 
+        title: text.trim(), 
+        createdAt: date.toISOString() 
+      };
+      console.log('TodoPage: Dispatching addTaskAsync with date:', taskData);
+      
+      const result = await dispatch(addTaskAsync(taskData)).unwrap();
+      console.log('TodoPage: Task added successfully with date:', result);
+    } catch (error) {
+      console.error('TodoPage: Failed to add task with date:', error);
+      alert('Failed to add task: ' + error.message);
     }
   };
 
   const handleDeleteTask = async (id) => {
+    console.log('TodoPage: Delete task called for ID:', id);
     if (window.confirm('Delete this task?')) {
       try {
         await dispatch(deleteTaskAsync(id)).unwrap();
+        console.log('TodoPage: Task deleted successfully');
       } catch (error) {
+        console.error('TodoPage: Failed to delete task:', error);
         alert('Failed to delete task: ' + error.message);
       }
     }
   };
 
   const handleToggleComplete = async (id) => {
+    console.log('TodoPage: Toggle complete called for ID:', id);
     try {
-      await dispatch(toggleTaskAsync(id)).unwrap();
+      const result = await dispatch(toggleTaskAsync(id)).unwrap();
+      console.log('TodoPage: Task toggled successfully:', result);
     } catch (error) {
-      alert('Failed to toggle task: ' + error.message);
+      console.error('TodoPage: Failed to toggle task:', error);
+      // Check if it's the future date error
+      if (error.message && error.message.includes('future date')) {
+        alert('⚠️ This task is scheduled for tomorrow or a future date.\nYou cannot mark it as done today.');
+      } else {
+        alert('Failed to toggle task: ' + error.message);
+      }
     }
   };
 
   const handleEditTask = async (id, text) => {
+    console.log('TodoPage: Edit task called for ID:', id, 'text:', text);
     try {
-      await dispatch(editTaskAsync({ id, title: text })).unwrap();
+      const result = await dispatch(editTaskAsync({ id, title: text })).unwrap();
+      console.log('TodoPage: Task edited successfully:', result);
     } catch (error) {
+      console.error('TodoPage: Failed to edit task:', error);
       alert('Failed to edit task: ' + error.message);
     }
   };

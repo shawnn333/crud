@@ -68,3 +68,43 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Firebase Setup (required)
+
+This app uses Firebase for authentication and task storage (`FirebaseTaskRepository` / `FirebaseAuthRepository`).
+
+### 1. Create a Firebase project
+1. Go to https://console.firebase.google.com and create a new project.
+2. In the project, go to **Build -> Authentication -> Get started -> Sign-in method** and enable **Email/Password**.
+3. Go to **Build -> Firestore Database -> Create database** (start in production mode).
+
+### 2. Get your config
+Project settings (gear icon) -> General -> Your apps -> add a **Web app** -> copy the config values.
+
+### 3. Fill in `.env`
+Paste the values into the `REACT_APP_FIREBASE_*` variables in `.env` at the project root.
+(These are safe to commit - they are not secret keys; access is controlled by the security rules below, not by hiding these values.)
+
+### 4. Firestore security rules
+Go to **Firestore Database -> Rules** and set:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/tasks/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+This makes sure a signed-in user can only read/write their own tasks (stored at `users/{uid}/tasks/{taskId}`), and no CRUD is possible at all without being signed in.
+
+### 5. Switching repository implementations
+`REACT_APP_TASK_REPOSITORY` in `.env` controls which `ITaskRepository` implementation `boot.js` uses:
+- `firebase` (default) - Firestore, per-user, requires login
+- `localStorage` - browser storage, no login required
+- `memory` - in-memory only, resets on every refresh
+
+Nothing outside `boot.js` needs to change when switching - that's the whole point of the interface.

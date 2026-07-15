@@ -28,10 +28,10 @@ export class InMemoryTaskRepository {
     return task ? task.toJSON() : null;
   }
 
-  async toggleComplete(id) {
-    const task = this.tasks.find(t => t.id === id);
-    if (!task) return;
-    task.toggleComplete();
+  async toggleComplete(task) {
+    const index = this.tasks.findIndex(t => t.id === task.id);
+    if (index === -1) return;
+    this.tasks[index] = task;
   }
 
   async getByStatus(completed) {

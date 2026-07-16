@@ -6,7 +6,6 @@ export class GetAllTasksUseCase {
   async execute(filter = null, searchTerm = null) {
     let tasks = await this.repository.getAllTasks();
 
-    // Apply search if provided
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
       tasks = tasks.filter(t => 
@@ -14,7 +13,6 @@ export class GetAllTasksUseCase {
       );
     }
 
-    // Sort by creation date, newest first
     return tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 }

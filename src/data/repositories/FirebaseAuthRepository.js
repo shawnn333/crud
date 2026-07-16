@@ -12,9 +12,6 @@ function mapUser(firebaseUser) {
   return { uid: firebaseUser.uid, email: firebaseUser.email };
 }
 
-// Human-readable messages for the Firebase Auth error codes users
-// will actually hit, instead of leaking raw Firebase error strings
-// to the login popup.
 function friendlyMessage(error) {
   switch (error?.code) {
     case 'auth/invalid-email':
@@ -32,10 +29,6 @@ function friendlyMessage(error) {
   }
 }
 
-/**
- * FirebaseAuthRepository - concrete implementation of IAuthRepository
- * backed by Firebase Authentication (email/password).
- */
 export class FirebaseAuthRepository extends IAuthRepository {
   async login(email, password) {
     try {

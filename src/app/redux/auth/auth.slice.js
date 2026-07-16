@@ -1,4 +1,3 @@
-// State-management layer for auth.
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { loginUseCase, registerUseCase, logoutUseCase, authRepository } from '../../boot';
 
@@ -22,12 +21,10 @@ export const registerAsync = createAsyncThunk(
   async ({ email, password }, { rejectWithValue }) => {
     try {
       console.log('auth.slice: registerAsync called');
-      // Register the user
+
       const result = await registerUseCase.execute(email, password);
       console.log('auth.slice: registerAsync result:', result);
       
-      // IMPORTANT: After registration, sign the user out immediately
-      // so they stay on the login page
       await logoutUseCase.execute();
       console.log('auth.slice: Signed out after registration');
       

@@ -62,8 +62,6 @@ export class FirebaseTaskRepository extends ITaskRepository {
         updatedAt: serverTimestamp(),
       };
 
-      // Use the id the domain entity already generated (Task.create) so
-      // the caller never needs anything handed back from the repository.
       const ref = doc(db, 'users', uid, 'tasks', String(taskData.id));
       await setDoc(ref, newTaskData);
       console.log(`✅ Task added with ID: ${taskData.id}`);
@@ -159,8 +157,6 @@ export class FirebaseTaskRepository extends ITaskRepository {
       return;
     }
 
-    // The domain entity already flipped its own `completed` flag before
-    // reaching the repository - we just persist that state.
     await updateDoc(ref, {
       completed: task.completed,
       updatedAt: serverTimestamp(),

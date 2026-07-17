@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { setUser } from './app/redux/auth/auth.slice';
 import { fetchTasksAsync } from './app/redux/task/task.slice';
 import { authRepository } from './app/boot';
@@ -42,7 +42,7 @@ export default function AuthGate() {
   }
 
   return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route 
           path="/login" 
@@ -53,14 +53,10 @@ export default function AuthGate() {
           element={user ? <App /> : <Navigate to="/login" />} 
         />
         <Route 
-          path="/crud" 
-          element={user ? <App /> : <Navigate to="/login" />} 
-        />
-        <Route 
           path="*" 
           element={<Navigate to={user ? "/" : "/login"} />} 
         />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

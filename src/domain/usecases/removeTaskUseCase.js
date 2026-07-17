@@ -10,8 +10,6 @@ export class RemoveTaskUseCase {
       throw new Error('Task ID is required');
     }
 
-    // removeTask takes the full entity per ITaskRepository, so fetch it
-    // first rather than passing a bare id.
     const existing = await this.repository.getTask(id);
     if (!existing) {
       throw new Error(`Task with ID ${id} not found`);

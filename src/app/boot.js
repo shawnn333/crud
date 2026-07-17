@@ -13,13 +13,6 @@ import { LoginUseCase } from '../domain/usecases/loginUseCase.js';
 import { RegisterUseCase } from '../domain/usecases/registerUseCase.js';
 import { LogoutUseCase } from '../domain/usecases/logoutUseCase.js';
 
-// --- Task repository selection -------------------------------------
-// Which ITaskRepository implementation backs the app. Nothing outside
-// this file needs to know or care which one is active - use cases,
-// Redux, and views all depend on the ITaskRepository interface only.
-//
-// Set REACT_APP_TASK_REPOSITORY in .env to: "firebase" | "localStorage" | "memory"
-// Defaults to "firebase" now that auth + Firestore are wired up.
 const REPOSITORY_KIND = process.env.REACT_APP_TASK_REPOSITORY || 'firebase';
 
 function createTaskRepository(kind) {
